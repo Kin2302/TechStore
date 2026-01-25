@@ -1,8 +1,185 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using TechStore.Domain.Entities
+@model IEnumerable<Product>
+
+@{
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- HERO BANNER -->
+<section class="hero-section mb-5">
+    <div class="container">
+        <div class="row align-items-center py-5 rounded-4" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);">
+            <div class="col-lg-6 text-white p-5">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fa-solid fa-microchip text-warning"></i> TechStore
+                </h1>
+                <p class="lead mb-4">Nền tảng linh kiện điện tử thông minh dành cho Maker & Sinh viên Việt Nam</p>
+                <div class="d-flex gap-3">
+                    <a href="#products" class="btn btn-warning btn-lg px-4">
+                        <i class="fa-solid fa-bolt"></i> Khám phá ngay
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fa-solid fa-robot"></i> Hỏi AI tư vấn
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center d-none d-lg-block">
+                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=500" 
+                     alt="Electronics" class="img-fluid rounded-3 shadow" style="max-height: 300px; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features mb-5">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3 col-6">
+                <div class="p-3 bg-light rounded-3">
+                    <i class="fa-solid fa-truck-fast fa-2x text-primary mb-2"></i>
+                    <h6 class="mb-0">Giao hàng nhanh</h6>
+                    <small class="text-muted">Toàn quốc 2-3 ngày</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-3 bg-light rounded-3">
+                    <i class="fa-solid fa-shield-halved fa-2x text-success mb-2"></i>
+                    <h6 class="mb-0">Bảo hành 6 tháng</h6>
+                    <small class="text-muted">Đổi mới 1-1</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-3 bg-light rounded-3">
+                    <i class="fa-solid fa-headset fa-2x text-warning mb-2"></i>
+                    <h6 class="mb-0">Hỗ trợ 24/7</h6>
+                    <small class="text-muted">Chat AI tư vấn</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-3 bg-light rounded-3">
+                    <i class="fa-solid fa-percent fa-2x text-danger mb-2"></i>
+                    <h6 class="mb-0">Giá sinh viên</h6>
+                    <small class="text-muted">Giảm 10% có thẻ SV</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRODUCT SECTION -->
+<section id="products" class="mb-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0">
+                <i class="fa-solid fa-fire text-danger"></i> Sản phẩm nổi bật
+            </h3>
+            <a href="#" class="btn btn-outline-primary btn-sm">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <div class="row g-4">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    var avatar = item.Images?.FirstOrDefault(x => x.IsMain)?.ImageUrl
+                        ?? item.Images?.FirstOrDefault()?.ImageUrl
+                        ?? "https://via.placeholder.com/300x200?text=No+Image";
+
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="card product-card h-100 border-0 shadow-sm">
+                            <!-- Badge -->
+                            @if (item.Stock < 10 && item.Stock > 0)
+                            {
+                                <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">Sắp hết</span>
+                            }
+                            else if (item.Stock == 0)
+                            {
+                                <span class="badge bg-secondary position-absolute top-0 start-0 m-2">Hết hàng</span>
+                            }
+
+                            <!-- Image -->
+                            <div class="card-img-wrapper">
+                                <a asp-action="Detail" asp-route-id="@item.Id">
+                                    <img src="@avatar" class="card-img-top" alt="@item.Name">
+                                </a>
+                                <!-- Quick Actions -->
+                                <div class="quick-actions">
+                                    <button class="btn btn-light btn-sm" title="Yêu thích">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                    <button class="btn btn-light btn-sm" title="So sánh">
+                                        <i class="fa-solid fa-code-compare"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="card-body d-flex flex-column">
+                                <!-- Category -->
+                                <small class="text-muted text-uppercase" style="font-size: 0.7rem;">
+                                    @item.Category?.Name
+                                </small>
+
+                                <!-- Name -->
+                                <h6 class="card-title mt-1 mb-2">
+                                    <a asp-action="Detail" asp-route-id="@item.Id" class="text-decoration-none text-dark stretched-link-hover">
+                                        @item.Name
+                                    </a>
+                                </h6>
+
+                                <!-- Price -->
+                                <div class="mt-auto">
+                                    <h5 class="text-danger fw-bold mb-2">
+                                        @item.Price.ToString("#,##0")₫
+                                    </h5>
+
+                                    <!-- Stock info -->
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fa-solid fa-box text-muted me-1" style="font-size: 0.75rem;"></i>
+                                        <small class="text-muted">Kho: @item.Stock</small>
+                                    </div>
+
+                                    <!-- Add to cart -->
+                                    <button class="btn btn-primary w-100 add-cart-btn" data-product-id="@item.Id">
+                                        <i class="fa-solid fa-cart-plus me-1"></i> Thêm vào giỏ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="alert alert-info text-center py-5">
+                        <i class="fa-solid fa-box-open fa-3x mb-3 text-muted"></i>
+                        <h5>Chưa có sản phẩm nào</h5>
+                        <p class="text-muted mb-0">Vui lòng quay lại sau hoặc liên hệ Admin để thêm sản phẩm mẫu.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Animation khi hover card
+        document.querySelectorAll('.add-cart-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const productId = this.dataset.productId;
+                // TODO: Gọi API thêm giỏ hàng
+                this.innerHTML = '<i class="fa-solid fa-check"></i> Đã thêm';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-success');
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fa-solid fa-cart-plus me-1"></i> Thêm vào giỏ';
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-primary');
+                }, 1500);
+            });
+        });
+    </script>
+}

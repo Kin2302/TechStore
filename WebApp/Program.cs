@@ -6,7 +6,7 @@ namespace WebApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +27,29 @@ namespace WebApp
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
+
+
+            // Loi them du lieu mau
+
+            //using (var scope = app.Services.CreateScope())
+            //{
+            //    var services = scope.ServiceProvider;
+            //    try
+            //    {
+            //        var context = services.GetRequiredService<ApplicationDbContext>();
+            //        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+
+            //        // Gọi hàm tạo dữ liệu mẫu
+            //        await DbInitializer.InitializeAsync(context, userManager);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        var logger = services.GetRequiredService<ILogger<Program>>();
+            //        logger.LogError(ex, "Đã xảy ra lỗi khi khởi tạo dữ liệu (Seeding Data).");
+            //    }
+            //}
+
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
