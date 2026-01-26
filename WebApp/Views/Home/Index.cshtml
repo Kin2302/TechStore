@@ -13,7 +13,7 @@
                 <h1 class="display-4 fw-bold mb-3">
                     <i class="fa-solid fa-microchip text-warning"></i> TechStore
                 </h1>
-                <p class="lead mb-4">Nền tảng linh kiện điện tử thông minh dành cho Maker & Sinh viên Việt Nam</p>
+                <p class="lead mb-4">Nền tảng linh kiện điện tử thông minh dành cho dân điện tử & Sinh viên Việt Nam</p>
                 <div class="d-flex gap-3">
                     <a href="#products" class="btn btn-warning btn-lg px-4">
                         <i class="fa-solid fa-bolt"></i> Khám phá ngay
@@ -165,20 +165,36 @@
 
 @section Scripts {
     <script>
-        // Animation khi hover card
-        document.querySelectorAll('.add-cart-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+        $(document).ready(function() {
+            $('.add-cart-btn').click(function(e) {
                 e.preventDefault();
-                const productId = this.dataset.productId;
-                // TODO: Gọi API thêm giỏ hàng
-                this.innerHTML = '<i class="fa-solid fa-check"></i> Đã thêm';
-                this.classList.remove('btn-primary');
-                this.classList.add('btn-success');
-                setTimeout(() => {
-                    this.innerHTML = '<i class="fa-solid fa-cart-plus me-1"></i> Thêm vào giỏ';
-                    this.classList.remove('btn-success');
-                    this.classList.add('btn-primary');
-                }, 1500);
+                var btn = $(this);
+                var productId = btn.data('product-id');
+                
+                $.ajax({
+                    url: '@Url.Action("AddToCart", "Cart")',
+                    type: 'POST',
+                    data: { productId: productId },
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'  // ✅ THÊM HEADER NÀY
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#cartCount').text(response.cartCount);
+                            
+                            btn.html('<i class="fa-solid fa-check"></i> Đã thêm');
+                            btn.removeClass('btn-primary').addClass('btn-success');
+                            setTimeout(function() {
+                                btn.html('<i class="fa-solid fa-cart-plus me-1"></i> Thêm vào giỏ');
+                                btn.removeClass('btn-success').addClass('btn-primary');
+                            }, 1500);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error:', error);
+                        alert('Có lỗi xảy ra!');
+                    }
+                });
             });
         });
     </script>
