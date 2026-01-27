@@ -18,14 +18,14 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 1000;
+            z-index: 1050;
         }
 
         .chat-button {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background-color: #0d6efd;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)   ;
             color: white;
             display: flex;
             align-items: center;
@@ -70,6 +70,30 @@
         .chat-footer {
             padding: 10px;
             border-top: 1px solid #ddd;
+        }
+
+        .chat-message { margin-bottom: 12px; display: flex; }
+        .chat-message.user { justify-content: flex-end; }
+        .chat-message .message-content {
+            max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4;
+        }
+        .chat-message.bot .message-content {
+            background: white; border: 1px solid #e0e0e0; border-radius: 12px 12px 12px 0;
+        }
+        .chat-message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border-radius: 12px 12px 0 12px;
+        }
+        .typing-indicator { display: flex; gap: 4px; padding: 5px 0; }
+        .typing-indicator span {
+            width: 8px; height: 8px; background: #667eea; border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @@keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
         }
     </style>
 </head>
@@ -184,31 +208,137 @@
 
         <div class="chat-window" id="chatWindow">
             <div class="chat-header d-flex justify-content-between align-items-center">
-                <span><i class="fa-solid fa-microchip"></i> TechStore AI Support</span>
-                <button type="button" class="btn-close btn-close-white" onclick="toggleChat()"></button>
+                <span><i class="fa-solid fa-microchip me-2"></i>TechStore AI</span>
+                <button type="button" class="btn-close btn-close-white btn-sm" onclick="toggleChat()"></button>
             </div>
+
             <div class="chat-body" id="chatBody">
-                <div class="d-flex flex-row justify-content-start mb-2">
-                    <div class="p-2 bg-light border rounded">Xin chào! Tôi là AI tư vấn linh kiện. Bạn cần tìm gì cho dự án sắp tới?</div>
+                <div class="chat-message bot">
+                    <div class="message-content">
+                        👋 Xin chào! Tôi là AI tư vấn linh kiện.<br>
+                        Bạn có thể hỏi về linh kiện hoặc mô tả dự án cần làm!
+                    </div>
                 </div>
             </div>
+
             <div class="chat-footer">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Hỏi gì đó (VD: Mạch nào dùng cho IoT?)...">
-                    <button class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
+                    <input type="text" class="form-control" id="chatInput"
+                           placeholder="Nhập câu hỏi..."
+                           onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button class="btn btn-primary" onclick="sendMessage()">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .chat-message { margin-bottom: 12px; display: flex; }
+        .chat-message.user { justify-content: flex-end; }
+        .chat-message .message-content {
+            max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4;
+        }
+        .chat-message.bot .message-content {
+            background: white; border: 1px solid #e0e0e0; border-radius: 12px 12px 12px 0;
+        }
+        .chat-message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border-radius: 12px 12px 0 12px;
+        }
+        .typing-indicator { display: flex; gap: 4px; padding: 5px 0; }
+        .typing-indicator span {
+            width: 8px; height: 8px; background: #667eea; border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @@keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+    </style>
 
     <script>
         function toggleChat() {
             var chatWindow = document.getElementById("chatWindow");
             if (chatWindow.style.display === "none" || chatWindow.style.display === "") {
                 chatWindow.style.display = "flex";
+                document.getElementById("chatInput").focus();
             } else {
                 chatWindow.style.display = "none";
             }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatBody = document.getElementById('chatBody');
+
+            // Hiển thị tin nhắn user
+            chatBody.innerHTML += `
+                <div class="chat-message user">
+                    <div class="message-content">${escapeHtml(message)}</div>
+                </div>`;
+            input.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Hiển thị typing indicator
+            const typingId = 'typing-' + Date.now();
+            chatBody.innerHTML += `
+                <div class="chat-message bot" id="${typingId}">
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>`;
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                // Xóa typing indicator
+                document.getElementById(typingId)?.remove();
+
+                // Hiển thị phản hồi AI
+                chatBody.innerHTML += `
+                    <div class="chat-message bot">
+                        <div class="message-content">${formatResponse(data.reply || data.error || 'Có lỗi xảy ra')}</div>
+                    </div>`;
+            } catch (error) {
+                document.getElementById(typingId)?.remove();
+                chatBody.innerHTML += `
+                    <div class="chat-message bot">
+                        <div class="message-content text-danger">
+                            ❌ Không thể kết nối. Vui lòng thử lại sau.
+                        </div>
+                    </div>`;
+                console.error('Chat error:', error);
+            }
+
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatResponse(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
         }
     </script>
 </body>

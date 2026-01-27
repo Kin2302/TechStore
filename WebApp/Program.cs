@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Infrastructure.Data;
+using TechStore.Infrastructure.Services;
+using Application.Interfaces;
+
 namespace WebApp
 {
     public class Program
@@ -40,6 +43,10 @@ namespace WebApp
                 options.Cookie.IsEssential = true;
             });
 
+            // ✅ ĐĂNG KÝ SERVICES (Clean Architecture)
+            builder.Services.AddSingleton<IGeminiService, GeminiService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+
             var app = builder.Build();
 
             // ✅ SEED DATA (Bỏ comment)
@@ -72,13 +79,12 @@ namespace WebApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseSession(); // ✅ ĐẶT TRƯỚC UseRouting()
-
-            app.UseRouting();
+            app.UseRouting(); // ✅ THÊM DÒNG NÀY
 
             app.UseAuthentication();
             app.UseAuthorization();  // ✅ THÊM: Phân quyền
-            app.UseSession();
+
+            app.UseSession(); // ✅ CHỈ 1 LẦN, SAU Authorization
 
             app.MapControllerRoute(
                 name: "default",
