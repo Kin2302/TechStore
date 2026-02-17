@@ -1,15 +1,15 @@
-using Application.DTOs;
+    using Application.DTOs;
+using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
     public interface ICartService
     {
         List<CartItemDto> GetCart();
-        void AddToCart(int productId, int quantity = 1);
-        void UpdateQuantity(int productId, int quantity);
-        void RemoveFromCart(int productId);
-        void ClearCart();
+        void SaveCart(List<CartItemDto> cart);
+        Task<CartItemDto?> GetProductForCartAsync(int productId);
         int GetCartCount();
         decimal GetCartTotal();
+        void ClearCart();
     }
 }

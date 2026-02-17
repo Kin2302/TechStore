@@ -2,87 +2,104 @@
 using Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Mscc.GenerativeAI;
-using Mscc.GenerativeAI.Types;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Google;
 using System.Text.Json;
 
 namespace TechStore.Infrastructure.Services
 {
-    public class GeminiService : IGeminiService
-    {
-        private readonly GenerativeModel? _model;
+    public class GeminiService : IGeminiService 
+    {       
+        private readonly Kernel _kernel;
         private readonly ILogger<GeminiService>? _logger;
-        private readonly string _modelName = "gemini-2.5-flash"; // Đổi sang model ổn định hơn
-        private readonly TimeSpan _timeout = TimeSpan.FromSeconds(30);
+        private readonly TimeSpan _timeout = TimeSpan.FromSeconds(60);
 
-        public GeminiService(IConfiguration configuration, ILogger<GeminiService>? logger = null)
+        public GeminiService(Kernel kernel, ILogger<GeminiService>? logger = null)
         {
+            _kernel = kernel;
             _logger = logger;
-            var apiKey = configuration["Gemini:ApiKey"];
-            
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                _logger?.LogWarning("Gemini API Key chưa được cấu hình!");
-                return;
-            }
-
-            try
-            {
-                var googleAI = new GoogleAI(apiKey);
-                _model = googleAI.GenerativeModel(model: _modelName);
-                _logger?.LogInformation("Khởi tạo Gemini model '{Model}' thành công", _modelName);
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Lỗi khởi tạo Gemini model");
-            }
+            _logger?.LogInformation("✅ Khởi tạo GeminiService với Semantic Kernel");
         }
 
-        public async Task<string> ChatAsync(string userMessage, string productContext)
+        public async Task<string> ChatAsync(string userMessage)
         {
-            if (_model == null) return "⚠️ Hệ thống AI chưa cấu hình.";
+            var systemPrompt = @"
+Bạn là trợ lý AI thông minh của TechStore - cửa hàng linh kiện điện tử.
 
-            var prompt = $@"
-Bạn là trợ lý AI của TechStore - cửa hàng linh kiện điện tử.
+NHIỆM VỤ:
+✅ Hỗ trợ khách hàng tìm sản phẩm theo yêu cầu
+✅ Tư vấn linh kiện phù hợp với dự án/nhu cầu
+✅ Thêm sản phẩm vào giỏ hàng khi khách yêu cầu
+✅ Quản lý giỏ hàng (xem, xóa sản phẩm)
+✅ Trả lời các câu hỏi kỹ thuật về linh kiện điện tử
 
-📦 SẢN PHẨM HIỆN CÓ:
-{productContext}
+QUY TẮC:
+1. CHỈ gợi ý sản phẩm có trong cửa hàng (sử dụng search_products)
+2. Giá PHẢI chính xác từ dữ liệu
+3. Khi khách nói 'thêm vào giỏ' hoặc 'mua' → GỌI add_to_cart
+4. Trả lời tiếng Việt tự nhiên, thân thiện
+5. Nếu không chắc, HỎI THÊM thông tin
 
-QUY TẮC: 
-1. CHỈ gợi ý sản phẩm có trong danh sách trên.
-2. Giá phải lấy CHÍNH XÁC từ dữ liệu.
-3. Trả lời tiếng Việt tự nhiên, ngắn gọn (2-4 câu).
+TOOLS:
+- search_products: Tìm sản phẩm theo từ khóa
+- get_product_details: Xem chi tiết sản phẩm
+- get_popular_products: Lấy sản phẩm bán chạy
+- add_to_cart: Thêm vào giỏ hàng
+- remove_from_cart: Xóa khỏi giỏ
+- view_cart: Xem giỏ hàng
+- clear_cart: Xóa toàn bộ giỏ
+- update_cart_quantity: Cập nhật số lượng
 
-Khách hàng: {userMessage}";
+CÁCH XỬ LÝ:
+- 'Tìm Arduino' → search_products(keyword='Arduino')
+- 'Thêm Arduino Uno vào giỏ' → search_products → add_to_cart
+- 'Giỏ hàng của tôi' → view_cart
+- 'Xóa sản phẩm ID 5' → remove_from_cart(productId=5)";
+
+            var fullPrompt = $"{systemPrompt}\n\nKhách hàng: {userMessage}";
 
             try
             {
-                _logger?.LogInformation("Gửi ChatAsync request...");
+                _logger?.LogInformation("=== ChatAsync Start ===");
+                _logger?.LogInformation("User Message: {Message}", userMessage);
                 
+                var settings = new GeminiPromptExecutionSettings
+                {
+                    Temperature = 0.7,
+                    MaxTokens = 1000,
+                    ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+                };
+
+                _logger?.LogInformation("Sending request to Gemini API...");
                 using var cts = new CancellationTokenSource(_timeout);
-                var response = await _model.GenerateContent(prompt).WaitAsync(cts.Token);
                 
-                var result = response.Text?.Trim();
-                _logger?.LogInformation("Nhận response: {Length} ký tự", result?.Length ?? 0);
+                var result = await _kernel.InvokePromptAsync(fullPrompt, new(settings), cancellationToken: cts.Token);
                 
-                return result ?? "Xin lỗi, tôi không hiểu câu hỏi.";
+                var response = result.ToString().Trim();
+                _logger?.LogInformation("AI Response received: {Length} ký tự", response.Length);
+                _logger?.LogInformation("=== ChatAsync Success ===");
+                
+                return response;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                _logger?.LogWarning("ChatAsync timeout sau {Seconds}s", _timeout.TotalSeconds);
+                _logger?.LogError(ex, "ChatAsync timeout sau {Seconds}s", _timeout.TotalSeconds);
                 return "⏱️ Hệ thống AI phản hồi chậm, vui lòng thử lại.";
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger?.LogError(ex, "Lỗi kết nối Gemini API: {Message}", ex.Message);
+                return "⚠️ Không thể kết nối với AI. Vui lòng kiểm tra kết nối mạng.";
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Lỗi ChatAsync: {Message}", ex.Message);
-                return $"Lỗi kết nối AI: {ex.Message}";
+                _logger?.LogError(ex, "Lỗi ChatAsync: {Message} | StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
+                return $"⚠️ Xin lỗi, đã xảy ra lỗi: {ex.Message}";
             }
         }
 
         public async Task<AnalysisResultDto> AnalyzeQueryAsync(string userMessage)
         {
-            if (_model == null) return new AnalysisResultDto();
-
             var prompt = $@"
 Phân tích câu hỏi của khách hàng về linh kiện điện tử.
 Câu hỏi: ""{userMessage}""
@@ -101,16 +118,15 @@ Chỉ trả về JSON thuần, không kèm Markdown.";
             {
                 _logger?.LogInformation("Gửi AnalyzeQueryAsync request...");
 
-                var config = new GenerationConfig
+                var settings = new GeminiPromptExecutionSettings
                 {
-                    ResponseMimeType = "application/json",
-                    MaxOutputTokens = 150,
-                    Temperature = 0.2f
+                    Temperature = 0.2,
+                    MaxTokens = 150
                 };
 
                 using var cts = new CancellationTokenSource(_timeout);
-                var response = await _model.GenerateContent(prompt, config).WaitAsync(cts.Token);
-                var jsonText = CleanJsonString(response.Text);
+                var result = await _kernel.InvokePromptAsync(prompt, new(settings), cancellationToken: cts.Token);
+                var jsonText = CleanJsonString(result.ToString());
 
                 _logger?.LogInformation("Analyze response: {Json}", jsonText);
 
@@ -135,7 +151,7 @@ Chỉ trả về JSON thuần, không kèm Markdown.";
 
         public async Task<ProjectSuggestionDto?> SuggestProjectAsync(string userRequest, List<ProductInfoDto> products)
         {
-            if (_model == null || !products.Any()) return null;
+            if (!products.Any()) return null;
 
             var productListText = string.Join("\n", products.Take(30).Select(p =>
                 $"- ID:{p.Id} | {p.Name} | {p.Price:N0}đ"));
@@ -165,16 +181,15 @@ Chỉ chọn linh kiện có trong danh sách cung cấp.";
             {
                 _logger?.LogInformation("Gửi SuggestProjectAsync request...");
 
-                var config = new GenerationConfig
+                var settings = new GeminiPromptExecutionSettings
                 {
-                    ResponseMimeType = "application/json",
-                    MaxOutputTokens = 1000,
-                    Temperature = 0.5f
+                    Temperature = 0.5,
+                    MaxTokens = 1000
                 };
 
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60)); // Timeout dài hơn
-                var response = await _model.GenerateContent(prompt, config).WaitAsync(cts.Token);
-                var jsonText = CleanJsonString(response.Text);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+                var result = await _kernel.InvokePromptAsync(prompt, new(settings), cancellationToken: cts.Token);
+                var jsonText = CleanJsonString(result.ToString());
 
                 _logger?.LogInformation("Project response: {Length} ký tự", jsonText?.Length ?? 0);
 
@@ -205,4 +220,4 @@ Chỉ chọn linh kiện có trong danh sách cung cấp.";
             return text.Trim();
         }
     }
-}
+}       

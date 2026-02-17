@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Application.Interfaces;
-using Application.DTOs;
 
 namespace WebApp.Controllers
 {
@@ -9,47 +8,79 @@ namespace WebApp.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IGeminiService _geminiService;
-        private readonly IProductService _productService;
+        private readonly ILogger<ChatController> _logger;
 
-        public ChatController(IGeminiService geminiService, IProductService productService)
+        public ChatController(IGeminiService geminiService, ILogger<ChatController> logger)
         {
             _geminiService = geminiService;
-            _productService = productService;
+            _logger = logger;
         }
 
-        [HttpPost("ask")]
-        public async Task<IActionResult> Ask([FromBody] ChatRequestDto request)
+        [HttpGet("health")]
+        public IActionResult HealthCheck()
+        {
+            return Ok(new { status = "healthy", service = "ChatController", timestamp = DateTime.UtcNow });
+        }
+
+        [HttpPost("test")]
+        public async Task<IActionResult> TestConnection()
+        {
+            try
+            {
+                _logger.LogInformation("=== Test Connection Start ===");
+                var result = await _geminiService.ChatAsync("Hello, are you working?");
+                return Ok(new { success = true, message = "AI connection OK", response = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Test connection failed");
+                return Ok(new { 
+                    success = false, 
+                    error = ex.Message,
+                    type = ex.GetType().Name,
+                    stackTrace = ex.StackTrace 
+                });
+            }
+        }                   
+
+        [HttpPost("chat")]
+        public async Task<IActionResult> Chat([FromBody] ChatRequestModel request)
         {
             if (string.IsNullOrWhiteSpace(request.Message))
                 return BadRequest(new { error = "Tin nhắn không được để trống" });
 
-            // STEP 1: AI phân tích
-            var analysis = await _geminiService.AnalyzeQueryAsync(request.Message);
-
-            // STEP 2: Lọc sản phẩm
-            var products = await _productService.FilterByAnalysisAsync(analysis);
-
-            if (products.Count < 10)
+            try
             {
-                var more = await _productService.GetPopularAsync(30 - products.Count);
-                products.AddRange(more);
-                products = products.DistinctBy(p => p.Id).ToList();
+                _logger.LogInformation("User message: {Message}", request.Message);
+                
+                var reply = await _geminiService.ChatAsync(request.Message);
+
+                return Ok(new ChatResponseModel
+                {
+                    Reply = reply,
+                    Success = true
+                });
             }
-
-            // STEP 3: Tạo context
-            var context = products.Any()
-                ? string.Join("\n", products.Select(p => $"- {p.Name}: {p.Price:N0}đ"))
-                : "Không có sản phẩm.";
-
-            // STEP 4: AI trả lời
-            var reply = await _geminiService.ChatAsync(request.Message, context);
-
-            return Ok(new ChatResponseDto
+            catch (Exception ex)
             {
-                Reply = reply,
-                Analysis = analysis,
-                ProductsFound = products.Count
-            });
+                _logger.LogError(ex, "Error in Chat: {Message}", ex.Message);
+                return Ok(new ChatResponseModel
+                {
+                    Reply = $"⚠️ Xin lỗi, đã xảy ra lỗi: {ex.Message}",
+                    Success = false
+                });
+            }
         }
+    }
+
+    public class ChatRequestModel
+    {
+        public string Message { get; set; } = string.Empty;
+    }
+
+    public class ChatResponseModel
+    {
+        public string Reply { get; set; } = string.Empty;
+        public bool Success { get; set; }
     }
 }
