@@ -9,5 +9,6 @@ namespace Application.Interfaces
         Task<ProductDetailDto?> GetByIdAsync(int id);
         Task<List<ProductInfoDto>> FilterByAnalysisAsync(AnalysisResultDto analysis, int maxCount = 30);
         Task<List<ProductInfoDto>> GetPopularAsync(int count);
+        Task<List<ProductDto>> SearchProductsAsync(string keyword, decimal? maxPrice = null, int limit = 10);
     }
 }

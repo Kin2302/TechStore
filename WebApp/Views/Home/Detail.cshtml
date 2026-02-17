@@ -1,11 +1,9 @@
 ﻿@using TechStore.Domain.Entities
-@model Product
+@model Application.DTOs.ProductDetailDto
 
 @{
     ViewData["Title"] = Model.Name;
-    var mainImage = Model.Images?.FirstOrDefault(x => x.IsMain)?.ImageUrl
-        ?? Model.Images?.FirstOrDefault()?.ImageUrl
-        ?? "https://via.placeholder.com/500x400?text=No+Image";
+    var mainImage = Model.ImageUrl ?? "https://via.placeholder.com/500x400?text=No+Image";
 }
 
 <div class="container py-4">
@@ -13,7 +11,7 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="#" class="text-decoration-none">@Model.Category?.Name</a></li>
+            <li class="breadcrumb-item"><a href="#" class="text-decoration-none">@Model.CategoryName</a></li>
             <li class="breadcrumb-item active text-truncate" style="max-width: 200px;">@Model.Name</li>
         </ol>
     </nav>
@@ -52,11 +50,14 @@
                 <div class="card-body p-4">
                     <!-- Brand & Category -->
                     <div class="d-flex gap-2 mb-2">
-                        @if (Model.Brand != null)
+                        @if (!string.IsNullOrEmpty(Model.BrandName))
                         {
-                            <span class="badge bg-primary">@Model.Brand.Name</span>
+                            <span class="badge bg-primary">@Model.BrandName</span>
                         }
-                        <span class="badge bg-secondary">@Model.Category?.Name</span>
+                        @if (!string.IsNullOrEmpty(Model.CategoryName))
+                        {
+                            <span class="badge bg-secondary">@Model.CategoryName</span>
+                        }
                     </div>
 
                     <!-- Name -->
@@ -103,7 +104,9 @@
                         <div class="col">
                             <label class="form-label">&nbsp;</label>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-primary btn-lg flex-grow-1" @(Model.Stock == 0 ? "disabled" : "")>
+                                <button class="btn btn-primary btn-lg flex-grow-1 add-cart-btn" 
+                                        data-product-id="@Model.Id"
+                                        @(Model.Stock == 0 ? "disabled" : "")>
                                     <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
                                 </button>
                                 <button class="btn btn-outline-danger btn-lg" title="Yêu thích">
@@ -212,7 +215,6 @@
     <script>
         function changeMainImage(src) {
             document.getElementById('mainImage').src = src;
-            // Update active thumbnail
             document.querySelectorAll('.thumbnail-item').forEach(img => {
                 img.classList.remove('border-primary', 'border-2');
                 if (img.src === src) {
@@ -235,5 +237,34 @@
                 input.value = parseInt(input.value) - 1;
             }
         }
+
+        // Add to Cart AJAX
+        $(document).ready(function() {
+            $('.add-cart-btn').click(function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var productId = btn.data('product-id');
+                var quantity = parseInt($('#quantity').val());
+                
+                $.ajax({
+                    url: '@Url.Action("AddToCart", "Cart")',
+                    type: 'POST',
+                    data: { productId: productId, quantity: quantity },
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#cartCount').text(response.cartCount);
+                            btn.html('<i class="fa-solid fa-check"></i> Đã thêm');
+                            setTimeout(function() {
+                                btn.html('<i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ');
+                            }, 1500);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra!');
+                    }
+                });
+            });
+        });
     </script>
 }

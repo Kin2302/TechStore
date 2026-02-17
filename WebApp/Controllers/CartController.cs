@@ -1,25 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TechStore.Infrastructure.Data;
-using WebApp.Helpers;
-using WebApp.Models;
+using Application.Interfaces;
+using Application.DTOs;
 
 namespace WebApp.Controllers
 {
     public class CartController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private const string CartSessionKey = "Cart";
+        private readonly ICartService _cartService;
 
-        public CartController(ApplicationDbContext context)
+        public CartController(ICartService cartService)
         {
-            _context = context;
+            _cartService = cartService;
         }
 
         // Hiển thị giỏ hàng
         public IActionResult Index()
         {
-            var cart = GetCart();
+            var cart = _cartService.GetCart();
             return View(cart);
         }
 
@@ -27,16 +24,14 @@ namespace WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
         {
-            var product = await _context.Products
-                .Include(p => p.Images)
-                .FirstOrDefaultAsync(p => p.Id == productId);
+            var productInfo = await _cartService.GetProductForCartAsync(productId);
 
-            if (product == null)
+            if (productInfo == null)
             {
                 return NotFound();
             }
 
-            var cart = GetCart();
+            var cart = _cartService.GetCart();
             var existingItem = cart.FirstOrDefault(x => x.ProductId == productId);
 
             if (existingItem != null)
@@ -45,23 +40,15 @@ namespace WebApp.Controllers
             }
             else
             {
-                cart.Add(new CartItem
-                {
-                    ProductId = product.Id,
-                    ProductName = product.Name,
-                    ImageUrl = product.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl 
-                               ?? product.Images.FirstOrDefault()?.ImageUrl,
-                    Price = product.Price,
-                    Quantity = quantity
-                });
+                productInfo.Quantity = quantity;
+                cart.Add(productInfo);
             }
 
-            SaveCart(cart);
+            _cartService.SaveCart(cart);
 
-            // Nếu là AJAX request
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            if (Request.Headers.XRequestedWith == "XMLHttpRequest")
             {
-                return Json(new { success = true, cartCount = cart.Sum(x => x.Quantity) });
+                return Json(new { success = true, cartCount = _cartService.GetCartCount() });
             }
 
             return RedirectToAction("Index");
@@ -71,28 +58,25 @@ namespace WebApp.Controllers
         [HttpPost]
         public IActionResult UpdateQuantity(int productId, int quantity)
         {
-            var cart = GetCart();
+            var cart = _cartService.GetCart();
             var item = cart.FirstOrDefault(x => x.ProductId == productId);
 
             if (item != null)
             {
                 if (quantity <= 0)
-                {
                     cart.Remove(item);
-                }
                 else
-                {
                     item.Quantity = quantity;
-                }
-                SaveCart(cart);
+                
+                _cartService.SaveCart(cart);
             }
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            if (Request.Headers.XRequestedWith == "XMLHttpRequest")
             {
                 return Json(new { 
                     success = true, 
-                    cartCount = cart.Sum(x => x.Quantity),
-                    cartTotal = cart.Sum(x => x.Total)
+                    cartCount = _cartService.GetCartCount(),
+                    cartTotal = _cartService.GetCartTotal()
                 });
             }
 
@@ -103,18 +87,18 @@ namespace WebApp.Controllers
         [HttpPost]
         public IActionResult RemoveFromCart(int productId)
         {
-            var cart = GetCart();
+            var cart = _cartService.GetCart();
             var item = cart.FirstOrDefault(x => x.ProductId == productId);
 
             if (item != null)
             {
                 cart.Remove(item);
-                SaveCart(cart);
+                _cartService.SaveCart(cart);
             }
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            if (Request.Headers.XRequestedWith == "XMLHttpRequest")
             {
-                return Json(new { success = true, cartCount = cart.Sum(x => x.Quantity) });
+                return Json(new { success = true, cartCount = _cartService.GetCartCount() });
             }
 
             return RedirectToAction("Index");
@@ -124,27 +108,15 @@ namespace WebApp.Controllers
         [HttpPost]
         public IActionResult ClearCart()
         {
-            HttpContext.Session.Remove(CartSessionKey);
+            _cartService.ClearCart();
             return RedirectToAction("Index");
         }
 
-        // Lấy số lượng trong giỏ (cho AJAX)
+        // Lấy số lượng trong giỏ
         [HttpGet]
         public IActionResult GetCartCount()
         {
-            var cart = GetCart();
-            return Json(new { count = cart.Sum(x => x.Quantity) });
-        }
-
-        // Helper methods
-        private List<CartItem> GetCart()
-        {
-            return HttpContext.Session.Get<List<CartItem>>(CartSessionKey) ?? new List<CartItem>();
-        }
-
-        private void SaveCart(List<CartItem> cart)
-        {
-            HttpContext.Session.Set(CartSessionKey, cart);
+            return Json(new { count = _cartService.GetCartCount() });
         }
     }
 }

@@ -123,6 +123,37 @@ namespace TechStore.Infrastructure.Services
                 .ToListAsync();
         }
 
+        public async Task<List<ProductDto>> SearchProductsAsync(string keyword, decimal? maxPrice = null, int limit = 10)
+        {
+            var query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Images)
+                .Where(p => !p.IsDeleted && p.Stock > 0);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var lowerKeyword = keyword.ToLower();
+                query = query.Where(p => 
+                    p.Name.ToLower().Contains(lowerKeyword) ||
+                    p.Code.ToLower().Contains(lowerKeyword) ||
+                    (p.Category != null && p.Category.Name.ToLower().Contains(lowerKeyword)) ||
+                    (p.Brand != null && p.Brand.Name.ToLower().Contains(lowerKeyword))
+                );
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+
+            return await query
+                .OrderBy(p => p.Price)
+                .Take(limit)
+                .Select(p => MapToDto(p))
+                .ToListAsync();
+        }
+
         private static ProductDto MapToDto(TechStore.Domain.Entities.Product p)
         {
             return new ProductDto

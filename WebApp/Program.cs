@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using TechStore.Infrastructure.Data;
 using TechStore.Infrastructure.Services;
 using Application.Interfaces;
+using TechStore.Infrastructure.Plugins;
+using Microsoft.SemanticKernel;
 
 namespace WebApp
 {
@@ -12,7 +14,6 @@ namespace WebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Lấy chuỗi kết nối từ appsettings.json
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -23,18 +24,18 @@ namespace WebApp
             // ✅ KÍCH HOẠT IDENTITY + ROLES
             builder.Services.AddDefaultIdentity<IdentityUser>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = false; // Không cần xác nhận email
+                options.SignIn.RequireConfirmedAccount = false; 
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false; // Không cần ký tự đặc biệt
+                options.Password.RequireNonAlphanumeric = false; 
             })
 
-            .AddRoles<IdentityRole>() // ⚠️ QUAN TRỌNG: Thêm Role (Admin/User)
+            .AddRoles<IdentityRole>() // 
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.AddRazorPages(); // ✅ Cần cho Identity UI
+            builder.Services.AddRazorPages(); // 
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -44,8 +45,43 @@ namespace WebApp
             });
 
             // ✅ ĐĂNG KÝ SERVICES (Clean Architecture)
-            builder.Services.AddSingleton<IGeminiService, GeminiService>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<ProductPlugin>();
+            builder.Services.AddScoped<CartPlugin>();
+
+            // ✅ Tạo Kernel với Gemini + Plugins
+            builder.Services.AddScoped<Kernel>(sp =>
+            {
+                var config = sp.GetRequiredService<IConfiguration>();
+                var apiKey = config["Gemini:ApiKey"];
+
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    throw new InvalidOperationException("Gemini API Key not found in configuration!");
+                }
+
+                var kernelBuilder = Kernel.CreateBuilder();
+                
+                // Add Gemini với model stable
+                kernelBuilder.AddGoogleAIGeminiChatCompletion(
+                    modelId: "gemini-2.5-flash",
+                    apiKey: apiKey
+                );
+
+                // ✅ Add Plugins
+                var productPlugin = sp.GetRequiredService<ProductPlugin>();
+                var cartPlugin = sp.GetRequiredService<CartPlugin>();
+                
+                kernelBuilder.Plugins.AddFromObject(productPlugin, "ProductTools");
+                kernelBuilder.Plugins.AddFromObject(cartPlugin, "CartTools");
+
+                return kernelBuilder.Build();
+            });
+
+            // ✅ GeminiService sử dụng Kernel đã tạo
+            builder.Services.AddScoped<IGeminiService, GeminiService>();
 
             var app = builder.Build();
 

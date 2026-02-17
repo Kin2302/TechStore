@@ -6,9 +6,13 @@
     <Nullable>enable</Nullable>
     <RootNamespace>TechStore.Infrastructure</RootNamespace>
     <AssemblyName>TechStore.Infrastructure</AssemblyName>
+    <NoWarn>$(NoWarn);SKEXP0070</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- ✅ THÊM DÒNG NÀY -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.23" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.23" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.23">
@@ -16,7 +20,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.ML" Version="5.0.0" />
-    <PackageReference Include="Mscc.GenerativeAI" Version="3.0.2" />
+ 
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.28.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.28.0-alpha" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
