@@ -1,0 +1,199 @@
+﻿@model Application.DTOs.OrderDto
+
+@{
+    ViewData["Title"] = $"Đơn hàng #{Model.Id}";
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-action="MyOrders" class="text-decoration-none">Đơn hàng của tôi</a></li>
+            <li class="breadcrumb-item active">#@Model.Id</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="mb-1">
+                <i class="fa-solid fa-file-invoice text-primary me-2"></i>Đơn hàng #@Model.Id
+            </h2>
+            <small class="text-muted">
+                <i class="fa-solid fa-calendar me-1"></i>Đặt ngày @Model.OrderDate.ToString("dd/MM/yyyy") lúc @Model.OrderDate.ToString("HH:mm")
+            </small>
+        </div>
+        <span class="badge @Model.StatusBadgeClass fs-6 px-3 py-2">
+            @Model.StatusDisplay
+        </span>
+    </div>
+
+    <!-- Order Tracking -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body py-4">
+            <div class="d-flex justify-content-between position-relative px-4">
+                @{
+                    var steps = new[] {
+                        ("Pending", "Đặt hàng", "fa-clipboard-check"),
+                        ("Confirmed", "Xác nhận", "fa-circle-check"),
+                        ("Shipping", "Đang giao", "fa-truck-fast"),
+                        ("Completed", "Hoàn thành", "fa-flag-checkered")
+                    };
+                    var statusOrder = new[] { "Pending", "Confirmed", "Shipping", "Completed" };
+                    var currentIndex = Array.IndexOf(statusOrder, Model.Status);
+                    var isCancelled = Model.Status == "Cancelled" || Model.Status == "Refunded";
+                }
+
+                <!-- Progress Line -->
+                <div class="position-absolute" style="top:20px;left:60px;right:60px;height:3px;background:#dee2e6;z-index:0;">
+                    @if (!isCancelled && currentIndex > 0)
+                    {
+                        <div class="bg-success h-100" style="width:@(currentIndex * 100 / 3)%;transition:width 0.5s;"></div>
+                    }
+                </div>
+
+                @for (int i = 0; i < steps.Length; i++)
+                {
+                    var (status, label, icon) = steps[i];
+                    var isActive = !isCancelled && i <= currentIndex;
+                    var isCurrent = !isCancelled && i == currentIndex;
+                    <div class="text-center position-relative" style="z-index:1;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-2 @(isActive ? "bg-success" : "bg-light border")"
+                             style="width:42px;height:42px;@(isCurrent ? "box-shadow:0 0 0 4px rgba(25,135,84,.25);" : "")">
+                            @if (isActive)
+                            {
+                                <i class="fa-solid @icon text-white"></i>
+                            }
+                            else
+                            {
+                                <i class="fa-solid @icon text-muted"></i>
+                            }
+                        </div>
+                        <br>
+                        <small class="@(isActive ? "fw-bold text-success" : "text-muted")">@label</small>
+                    </div>
+                }
+            </div>
+            @if (isCancelled)
+            {
+                <div class="text-center mt-3">
+                    <span class="badge bg-danger fs-6 px-3 py-2"><i class="fa-solid fa-ban me-1"></i>@Model.StatusDisplay</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Thông tin giao hàng -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="fa-solid fa-truck text-primary me-2"></i>Thông tin giao hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase">Người nhận</small>
+                        <p class="mb-0 fw-semibold"><i class="fa-solid fa-user me-2 text-muted"></i>@Model.FullName</p>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase">Số điện thoại</small>
+                        <p class="mb-0 fw-semibold"><i class="fa-solid fa-phone me-2 text-muted"></i>@Model.PhoneNumber</p>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase">Email</small>
+                        <p class="mb-0 fw-semibold"><i class="fa-solid fa-envelope me-2 text-muted"></i>@Model.Email</p>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase">Địa chỉ</small>
+                        <p class="mb-0 fw-semibold"><i class="fa-solid fa-location-dot me-2 text-muted"></i>@Model.ShippingAddress</p>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+                        <div class="mb-3">
+                            <small class="text-muted text-uppercase">Ghi chú</small>
+                            <p class="mb-0"><i class="fa-solid fa-note-sticky me-2 text-muted"></i>@Model.Note</p>
+                        </div>
+                    }
+                    <div>
+                        <small class="text-muted text-uppercase">Thanh toán</small>
+                        <p class="mb-0">
+                            <i class="fa-solid fa-credit-card me-2 text-muted"></i>
+                            <span class="badge bg-info">@Model.PaymentMethodDisplay</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chi tiết sản phẩm -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="fa-solid fa-box text-warning me-2"></i>Sản phẩm đã đặt</h5>
+                </div>
+                <div class="card-body p-0">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="d-flex gap-3 p-3 border-bottom align-items-center">
+                            <a asp-controller="Home" asp-action="Detail" asp-route-id="@item.ProductId">
+                                <img src="@(item.ImageUrl ?? "https://via.placeholder.com/60")"
+                                     class="rounded border" style="width:60px;height:60px;object-fit:contain;">
+                            </a>
+                            <div class="flex-grow-1">
+                                <a asp-controller="Home" asp-action="Detail" asp-route-id="@item.ProductId"
+                                   class="fw-semibold text-decoration-none d-block mb-1">
+                                    @item.ProductName
+                                </a>
+                                <small class="text-muted">
+                                    Đơn giá: @item.Price.ToString("#,##0")₫ × @item.Quantity
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-danger">@item.Total.ToString("#,##0")₫</span>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Tổng tiền -->
+                    <div class="p-3 bg-light">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Tạm tính (@Model.Items.Count sản phẩm):</span>
+                            <span>@Model.TotalAmount.ToString("#,##0")₫</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Phí vận chuyển:</span>
+                            <span class="text-success">Miễn phí</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong class="fs-5">Tổng cộng:</strong>
+                            <strong class="fs-4 text-danger">@Model.TotalAmount.ToString("#,##0")₫</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-between mt-4 flex-wrap gap-2">
+        <a asp-action="MyOrders" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại đơn hàng
+        </a>
+        <div class="d-flex gap-2">
+            @if (Model.Status == "Pending")
+            {
+                <form asp-action="Cancel" asp-route-id="@Model.Id" method="post"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng #@Model.Id?')">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa-solid fa-ban me-1"></i> Hủy đơn hàng
+                    </button>
+                </form>
+            }
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                <i class="fa-solid fa-shopping-bag me-1"></i> Tiếp tục mua sắm
+            </a>
+        </div>
+    </div>
+</div>

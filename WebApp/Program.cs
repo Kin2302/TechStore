@@ -50,6 +50,7 @@ namespace WebApp
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<ProductPlugin>();
             builder.Services.AddScoped<CartPlugin>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
 
             // ✅ Tạo Kernel với Gemini + Plugins
             builder.Services.AddScoped<Kernel>(sp =>
