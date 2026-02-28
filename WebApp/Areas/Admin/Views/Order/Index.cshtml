@@ -1,0 +1,155 @@
+﻿@model List<Application.DTOs.OrderDto>
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    var currentStatus = ViewBag.CurrentStatus as string;
+
+    var statusFilters = new[]
+    {
+        new { Value = (string?)null, Label = "Tất cả", Icon = "fa-list", Color = "secondary" },
+        new { Value = (string?)"Pending", Label = "Chờ xác nhận", Icon = "fa-clock", Color = "warning" },
+        new { Value = (string?)"Confirmed", Label = "Đã xác nhận", Icon = "fa-circle-check", Color = "info" },
+        new { Value = (string?)"Shipping", Label = "Đang giao", Icon = "fa-truck", Color = "primary" },
+        new { Value = (string?)"Completed", Label = "Hoàn thành", Icon = "fa-flag-checkered", Color = "success" },
+        new { Value = (string?)"Cancelled", Label = "Đã hủy", Icon = "fa-ban", Color = "danger" },
+    };
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1"><i class="fa-solid fa-box me-2"></i>Quản lý đơn hàng</h4>
+        <small class="text-muted">Tổng cộng <strong>@Model.Count</strong> đơn hàng</small>
+    </div>
+</div>
+
+<!-- Notifications -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-check me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Status Filter -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body py-3">
+        <div class="d-flex gap-2 flex-wrap">
+            @foreach (var filter in statusFilters)
+            {
+                var isActive = filter.Value == currentStatus;
+                <a asp-action="Index" asp-route-status="@filter.Value"
+                   class="btn btn-sm @(isActive ? $"btn-{filter.Color}" : $"btn-outline-{filter.Color}")">
+                    <i class="fa-solid @filter.Icon me-1"></i>
+                    @filter.Label
+                    @if (isActive)
+                    {
+                        <span class="badge bg-white text-dark ms-1">@Model.Count</span>
+                    }
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Orders Table -->
+@if (!Model.Any())
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-body text-center py-5">
+            <i class="fa-solid fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Không có đơn hàng nào</h5>
+            @if (currentStatus != null)
+            {
+                <a asp-action="Index" class="btn btn-outline-primary mt-2">
+                    <i class="fa-solid fa-arrow-left me-1"></i>Xem tất cả
+                </a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:80px;">Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Sản phẩm</th>
+                        <th class="text-end">Tổng tiền</th>
+                        <th>Thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center" style="width:100px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@order.Id" class="fw-bold text-decoration-none">
+                                    #@order.Id
+                                </a>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fw-semibold">@order.FullName</span>
+                                    <br><small class="text-muted"><i class="fa-solid fa-phone me-1"></i>@order.PhoneNumber</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span>@order.OrderDate.ToString("dd/MM/yyyy")</span>
+                                <br><small class="text-muted">@order.OrderDate.ToString("HH:mm")</small>
+                            </td>
+                            <td>
+                                @{
+                                    var firstItem = order.Items.FirstOrDefault();
+                                }
+                                @if (firstItem != null)
+                                {
+                                    <div class="d-flex align-items-center">
+                                        <img src="@(firstItem.ImageUrl ?? "https://via.placeholder.com/36")"
+                                             class="rounded border me-2" style="width:36px;height:36px;object-fit:contain;">
+                                        <div>
+                                            <small class="fw-semibold text-truncate d-block" style="max-width:160px;">@firstItem.ProductName</small>
+                                            @if (order.Items.Count > 1)
+                                            {
+                                                <small class="text-muted">+@(order.Items.Count - 1) sản phẩm khác</small>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold text-danger">@order.TotalAmount.ToString("#,##0")₫</span>
+                            </td>
+                            <td>
+                                <small>@order.PaymentMethodDisplay</small>
+                            </td>
+                            <td>
+                                <span class="badge @order.StatusBadgeClass rounded-pill px-3">@order.StatusDisplay</span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Details" asp-route-id="@order.Id"
+                                   class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

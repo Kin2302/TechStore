@@ -51,6 +51,11 @@ namespace WebApp
             builder.Services.AddScoped<ProductPlugin>();
             builder.Services.AddScoped<CartPlugin>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
+            builder.Services.AddScoped<IAdminProductService, AdminProductService>();
+
+
 
             // ✅ Tạo Kernel với Gemini + Plugins
             builder.Services.AddScoped<Kernel>(sp =>
@@ -122,6 +127,11 @@ namespace WebApp
             app.UseAuthorization();  // ✅ THÊM: Phân quyền
 
             app.UseSession(); // ✅ CHỈ 1 LẦN, SAU Authorization
+
+            app.MapControllerRoute(
+                name: "areas",
+                pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}"
+            );
 
             app.MapControllerRoute(
                 name: "default",

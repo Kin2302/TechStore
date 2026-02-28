@@ -1,0 +1,285 @@
+﻿@model Application.DTOs.ProductEditDto
+
+@{
+    ViewData["Title"] = "Sửa sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<TechStore.Domain.Entities.Category> ?? Enumerable.Empty<TechStore.Domain.Entities.Category>();
+    var brands = ViewBag.Brands as IEnumerable<TechStore.Domain.Entities.Brand> ?? Enumerable.Empty<TechStore.Domain.Entities.Brand>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="fa-solid fa-pen text-primary me-2"></i>Sửa sản phẩm</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left me-1"></i>Quay lại
+    </a>
+</div>
+
+<!-- Validation Summary -->
+@if (!ViewData.ModelState.IsValid)
+{
+    var errors = ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).Where(e => !string.IsNullOrEmpty(e));
+    if (errors.Any())
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fa-solid fa-circle-exclamation me-2"></i><strong>Vui lòng kiểm tra lại:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach (var error in errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+}
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExistingImageUrl" />
+
+    <div class="row g-4">
+        <!-- Cột trái: Thông tin chính -->
+        <div class="col-lg-8">
+            <!-- Thông tin cơ bản -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0"><i class="fa-solid fa-info-circle text-primary me-2"></i>Thông tin cơ bản</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="Name" class="form-label fw-semibold">
+                                Tên sản phẩm <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Code" class="form-label fw-semibold">
+                                Mã SKU <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Code" class="form-control" />
+                            <span asp-validation-for="Code" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ShortDescription" class="form-label fw-semibold">Mô tả ngắn</label>
+                            <textarea asp-for="ShortDescription" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-semibold">Mô tả chi tiết</label>
+                            <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Giá & Tồn kho -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0"><i class="fa-solid fa-money-bill text-success me-2"></i>Giá & Tồn kho</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="Price" class="form-label fw-semibold">
+                                Giá bán <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="Price" class="form-control" type="number" min="0" />
+                                <span class="input-group-text">₫</span>
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DiscountPrice" class="form-label fw-semibold">Giá khuyến mãi</label>
+                            <div class="input-group">
+                                <input asp-for="DiscountPrice" class="form-control" type="number" min="0" />
+                                <span class="input-group-text">₫</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Stock" class="form-label fw-semibold">
+                                Tồn kho <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Stock" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="Stock" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông số kỹ thuật -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="fa-solid fa-microchip text-danger me-2"></i>Thông số kỹ thuật</h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addSpec()">
+                        <i class="fa-solid fa-plus me-1"></i>Thêm thông số
+                    </button>
+                </div>
+                <div class="card-body p-4">
+                    <div id="specContainer">
+                        <!-- Rows sẽ được load từ Model -->
+                    </div>
+                    <div id="specEmpty" class="text-center text-muted py-3" style="display:@(Model.Specifications.Any() ? "none" : "block")">
+                        <i class="fa-solid fa-clipboard-list fa-2x mb-2"></i>
+                        <p class="mb-0 small">Chưa có thông số nào. Nhấn "Thêm thông số" để bắt đầu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Phân loại & Ảnh -->
+        <div class="col-lg-4">
+            <!-- Phân loại -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0"><i class="fa-solid fa-folder-tree text-warning me-2"></i>Phân loại</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label asp-for="CategoryId" class="form-label fw-semibold">
+                            Danh mục <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="CategoryId" class="form-select">
+                            <option value="">-- Chọn danh mục --</option>
+                            @foreach (var cat in categories)
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                    </div>
+                    <div>
+                        <label asp-for="BrandId" class="form-label fw-semibold">Thương hiệu</label>
+                        <select asp-for="BrandId" class="form-select">
+                            <option value="">-- Chọn thương hiệu --</option>
+                            @foreach (var brand in brands)
+                            {
+                                <option value="@brand.Id">@brand.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ảnh sản phẩm -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0"><i class="fa-solid fa-image text-info me-2"></i>Ảnh sản phẩm</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <img id="imagePreview"
+                             src="@(Model.ExistingImageUrl ?? "https://via.placeholder.com/200x200?text=No+Image")"
+                             class="rounded border" style="width:100%;max-width:200px;height:200px;object-fit:contain;">
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.ExistingImageUrl))
+                    {
+                        <div class="alert alert-info py-2 small mb-2">
+                            <i class="fa-solid fa-image me-1"></i>Đã có ảnh. Upload ảnh mới sẽ thay thế.
+                        </div>
+                    }
+                    <input type="file" name="mainImage" class="form-control" accept="image/*"
+                           onchange="previewImage(this)">
+                    <small class="text-muted mt-1 d-block">Bỏ trống nếu giữ ảnh cũ.</small>
+                </div>
+            </div>
+
+            <!-- Trạng thái -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0"><i class="fa-solid fa-toggle-on text-success me-2"></i>Trạng thái</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="form-check form-switch mb-3">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox">
+                        <label asp-for="IsActive" class="form-check-label">Hiển thị sản phẩm</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input asp-for="IsFeatured" class="form-check-input" type="checkbox">
+                        <label asp-for="IsFeatured" class="form-check-label">Sản phẩm nổi bật</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <a asp-action="Index" class="btn btn-outline-secondary px-4">
+            <i class="fa-solid fa-xmark me-1"></i>Hủy
+        </a>
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="fa-solid fa-floppy-disk me-1"></i>Lưu thay đổi
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        var specIndex = 0;
+
+        function addSpec(name, value) {
+            name = name || '';
+            value = value || '';
+            var container = document.getElementById('specContainer');
+            var emptyMsg = document.getElementById('specEmpty');
+            if (emptyMsg) emptyMsg.style.display = 'none';
+
+            var row = document.createElement('div');
+            row.className = 'row g-2 mb-2 spec-row align-items-center';
+            row.innerHTML =
+                '<div class="col-5">' +
+                '  <input type="text" name="Specifications[' + specIndex + '].Name" class="form-control form-control-sm" placeholder="Tên (VD: Điện áp)" value="' + name + '" />' +
+                '</div>' +
+                '<div class="col-5">' +
+                '  <input type="text" name="Specifications[' + specIndex + '].Value" class="form-control form-control-sm" placeholder="Giá trị (VD: 5V)" value="' + value + '" />' +
+                '</div>' +
+                '<div class="col-2 text-center">' +
+                '  <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSpec(this)" title="Xóa">' +
+                '    <i class="fa-solid fa-trash"></i>' +
+                '  </button>' +
+                '</div>';
+            container.appendChild(row);
+            specIndex++;
+        }
+
+        function removeSpec(btn) {
+            var row = btn.closest('.spec-row');
+            row.remove();
+            reindexSpecs();
+        }
+
+        function reindexSpecs() {
+            var rows = document.querySelectorAll('#specContainer .spec-row');
+            var emptyMsg = document.getElementById('specEmpty');
+            if (rows.length === 0 && emptyMsg) {
+                emptyMsg.style.display = 'block';
+            }
+            rows.forEach(function (row, idx) {
+                var inputs = row.querySelectorAll('input[type="text"]');
+                inputs[0].name = 'Specifications[' + idx + '].Name';
+                inputs[1].name = 'Specifications[' + idx + '].Value';
+            });
+            specIndex = rows.length;
+        }
+
+        // Load existing specifications từ Model
+        document.addEventListener('DOMContentLoaded', function () {
+            @foreach (var spec in Model.Specifications)
+            {
+                @:addSpec('@Html.Raw(spec.Name.Replace("'", "\\'"))', '@Html.Raw(spec.Value.Replace("'", "\\'"))');
+            }
+        });
+    </script>
+}
