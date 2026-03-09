@@ -1,6 +1,7 @@
 using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using TechStore.Domain.Entities;
 using TechStore.Infrastructure.Data;
 
 namespace TechStore.Infrastructure.Services
@@ -151,6 +152,57 @@ namespace TechStore.Infrastructure.Services
                 .OrderBy(p => p.Price)
                 .Take(limit)
                 .Select(p => MapToDto(p))
+                .ToListAsync();
+        }
+
+        public async Task<List<ProductDto>> SearchAsync(string? keyword, int? categoryId, decimal? minPrice, decimal? maxPrice, string? sortBy)
+        {
+            var query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Images)
+                .Where(p => !p.IsDeleted && p.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var lower = keyword.ToLower();
+                query = query.Where(p =>
+                    p.Name.ToLower().Contains(lower) ||
+                    p.Code.ToLower().Contains(lower) ||
+                    (p.ShortDescription != null && p.ShortDescription.ToLower().Contains(lower)) ||
+                    (p.Category != null && p.Category.Name.ToLower().Contains(lower)) ||
+                    (p.Brand != null && p.Brand.Name.ToLower().Contains(lower))
+                );
+            }
+
+            if (categoryId.HasValue)
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+
+            if (minPrice.HasValue)
+                query = query.Where(p => p.Price >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                query = query.Where(p => p.Price <= maxPrice.Value);
+
+            query = sortBy switch
+            {
+                "price_asc"  => query.OrderBy(p => p.Price),
+                "price_desc" => query.OrderByDescending(p => p.Price),
+                "newest"     => query.OrderByDescending(p => p.CreatedDate),
+                "popular"    => query.OrderByDescending(p => p.SoldCount),
+                _            => query.OrderBy(p => p.Name)
+            };
+
+            return await query
+                .Select(p => MapToDto(p))
+                .ToListAsync();
+        }
+
+        public async Task<List<Category>> GetCategoriesAsync()
+        {
+            return await _context.Categories
+                .Where(c => !c.IsDeleted)
+                .OrderBy(c => c.Name)
                 .ToListAsync();
         }
 

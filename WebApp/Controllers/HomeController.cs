@@ -8,32 +8,41 @@ namespace WebApp.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IProductService _productService;  // ✅ Dùng Interface
+        private readonly IProductService _productService;
 
         public HomeController(ILogger<HomeController> logger, IProductService productService)
         {
             _logger = logger;
-            _productService = productService;  // ✅ Inject Service
+            _productService = productService;
         }
 
         public async Task<IActionResult> Index()
         {
-            // ✅ Gọi qua Service thay vì DbContext trực tiếp
             var products = await _productService.GetFeaturedAsync(12);
             return View(products);
         }
 
         public async Task<IActionResult> Detail(int id)
         {
-            // ✅ Gọi qua Service
             var product = await _productService.GetByIdAsync(id);
-
-            if (product == null)
-            {
-                return NotFound();
-            }
-
+            if (product == null) return NotFound();
             return View(product);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Search(string? q, int? categoryId, decimal? minPrice, decimal? maxPrice, string? sortBy = "name")
+        {
+            var products = await _productService.SearchAsync(q, categoryId, minPrice, maxPrice, sortBy);
+            var categories = await _productService.GetCategoriesAsync();
+
+            ViewBag.Keyword = q;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+            ViewBag.SortBy = sortBy;
+            ViewBag.Categories = categories;
+
+            return View(products);
         }
 
         public IActionResult Privacy()
