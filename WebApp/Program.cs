@@ -5,6 +5,7 @@ using TechStore.Infrastructure.Services;
 using Application.Interfaces;
 using TechStore.Infrastructure.Plugins;
 using Microsoft.SemanticKernel;
+using Infrastructure.Services;
 
 namespace WebApp
 {
@@ -54,6 +55,8 @@ namespace WebApp
             builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IAdminProductService, AdminProductService>();
+            builder.Services.AddScoped<IAdminCategoryService, AdminCategoryService>();
+            builder.Services.AddScoped<IAdminBrandService, AdminBrandService>();
 
 
 

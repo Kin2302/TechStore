@@ -1,0 +1,16 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Application.DTOs
+{
+    public class BrandDto
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng nhập tên thương hiệu")]
+        public string Name { get; set; } = default!;
+
+        public string? Origin { get; set; }
+        public string? LogoUrl { get; set; }
+        public int ProductCount { get; set; }
+    }
+}

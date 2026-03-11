@@ -1,0 +1,92 @@
+﻿@model IEnumerable<Application.DTOs.BrandDto>
+
+@{
+    ViewData["Title"] = "Quản lý thương hiệu";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1"><i class="fa-solid fa-building me-2"></i>Quản lý thương hiệu</h4>
+        <small class="text-muted">Tổng cộng <strong>@Model.Count()</strong> thương hiệu</small>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i>Thêm thương hiệu
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fa-solid fa-circle-check me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm border-0">
+    @if (!Model.Any())
+    {
+        <div class="card-body text-center py-5">
+            <i class="fa-solid fa-building fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Chưa có thương hiệu nào</h5>
+            <a asp-action="Create" class="btn btn-primary mt-2">
+                <i class="fa-solid fa-plus me-1"></i>Thêm thương hiệu mới
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">Logo</th>
+                        <th>Tên thương hiệu</th>
+                        <th>Xuất xứ</th>
+                        <th class="text-center">Số sản phẩm</th>
+                        <th class="text-center" style="width:120px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var brand in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(brand.LogoUrl))
+                                {
+                                    <img src="@brand.LogoUrl" alt="@brand.Name"
+                                         class="rounded border" style="width:44px;height:44px;object-fit:contain;">
+                                }
+                                else
+                                {
+                                    <div class="rounded border bg-light d-flex align-items-center justify-content-center"
+                                         style="width:44px;height:44px;">
+                                        <i class="fa-solid fa-building text-muted"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td><span class="fw-semibold">@brand.Name</span></td>
+                            <td>@(brand.Origin ?? "—")</td>
+                            <td class="text-center">
+                                <span class="badge bg-primary">@brand.ProductCount</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Edit" asp-route-id="@brand.Id"
+                                       class="btn btn-outline-primary" title="Sửa">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@brand.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Xóa thương hiệu này?')">
+                                        <button type="submit" class="btn btn-outline-danger" title="Xóa">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
