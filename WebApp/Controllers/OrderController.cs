@@ -19,7 +19,6 @@ namespace WebApp.Controllers
             _cartService = cartService;
         }
 
-
         [HttpGet]
         public IActionResult Checkout()
         {
@@ -33,12 +32,12 @@ namespace WebApp.Controllers
             ViewBag.CartTotal = cartItems.Sum(x => x.Total);
             return View(new CheckoutDto());
         }
+
         [HttpPost]
         public async Task<IActionResult> Checkout(CheckoutDto model)
         {
             var cartItems = _cartService.GetCart();
 
-            // Guard 1: Validation fail → return sớm
             if (!ModelState.IsValid)
             {
                 ViewBag.CartItems = cartItems;
@@ -46,23 +45,25 @@ namespace WebApp.Controllers
                 return View(model);
             }
 
-            // Guard 2: Cart rỗng → return sớm
             if (!cartItems.Any())
             {
                 return RedirectToAction("Index", "Cart");
             }
 
-            // Happy path: Tạo order
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var result = await _orderService.CreateOrderAsync(userId, model, cartItems);
 
             if (result.Success)
             {
+                if (string.Equals(model.PaymentMethod, "MoMo", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RedirectToAction("ProcessMoMoPayment", "Payment", new { orderId = result.OrderId });
+                }
+
                 _cartService.ClearCart();
                 return RedirectToAction("Confirmation", new { id = result.OrderId });
             }
 
-            // Error path: Hiển thị lỗi
             ModelState.AddModelError("", result.ErrorMessage ?? "Đặt hàng thất bại");
             foreach (var msg in result.OutOfStockProducts)
             {
@@ -75,15 +76,16 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Confirmation(int id )
+        public async Task<IActionResult> Confirmation(int id)
         {
-           var order = await _orderService.GetOrderByIdAsync(id, User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var order = await _orderService.GetOrderByIdAsync(id, User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (order == null)
             {
                 return RedirectToAction("Index", "Home");
             }
             return View(order);
         }
+
         [HttpGet]
         public async Task<IActionResult> MyOrders()
         {
@@ -96,16 +98,14 @@ namespace WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-           var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-           var order = await _orderService.GetOrderByIdAsync(id, userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var order = await _orderService.GetOrderByIdAsync(id, userId);
             if (order == null)
             {
                 return RedirectToAction("MyOrders");
             }
             return View(order);
-
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Cancel(int id)
@@ -121,7 +121,5 @@ namespace WebApp.Controllers
             TempData["Success"] = "Đơn hàng đã được hủy.";
             return RedirectToAction("MyOrders");
         }
-
-
     }
 }

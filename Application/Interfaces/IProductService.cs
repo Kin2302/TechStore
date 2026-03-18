@@ -11,8 +11,8 @@ namespace Application.Interfaces
         Task<List<ProductInfoDto>> FilterByAnalysisAsync(AnalysisResultDto analysis, int maxCount = 30);
         Task<List<ProductInfoDto>> GetPopularAsync(int count);
         Task<List<ProductDto>> SearchProductsAsync(string keyword, decimal? maxPrice = null, int limit = 10);
+        Task<List<CompareItemDto>> GetCompareProductsAsync(List<int> productIds);
 
-        // Search page
         Task<List<ProductDto>> SearchAsync(string? keyword, int? categoryId, decimal? minPrice, decimal? maxPrice, string? sortBy);
         Task<List<Category>> GetCategoriesAsync();
     }

@@ -6,6 +6,7 @@ using Application.Interfaces;
 using TechStore.Infrastructure.Plugins;
 using Microsoft.SemanticKernel;
 using Infrastructure.Services;
+using Application.DTOs;
 
 namespace WebApp
 {
@@ -52,15 +53,18 @@ namespace WebApp
             builder.Services.AddScoped<ProductPlugin>();
             builder.Services.AddScoped<CartPlugin>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IAdminProductService, AdminProductService>();
             builder.Services.AddScoped<IAdminCategoryService, AdminCategoryService>();
             builder.Services.AddScoped<IAdminBrandService, AdminBrandService>();
+            builder.Services.AddScoped<ICompareService, CompareService>();
 
+            // MoMo
+            builder.Services.Configure<MoMoOptions>(builder.Configuration.GetSection("MoMo"));
+            builder.Services.AddHttpClient<IMoMoService, MoMoService>();
 
-
-            // ✅ Tạo Kernel với Gemini + Plugins
             builder.Services.AddScoped<Kernel>(sp =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();

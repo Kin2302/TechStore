@@ -18,6 +18,10 @@ namespace Application.DTOs
         public string? Description { get; set; }
         public List<ProductImageDto> Images { get; set; } = new();
         public List<ProductSpecDto> Specifications { get; set; } = new();
+
+        public decimal AverageRating { get; set; }
+        public int ReviewCount { get; set; }
+        public List<ReviewDto> Reviews { get; set; } = new();
     }
 
     public class ProductImageDto

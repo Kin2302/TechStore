@@ -1,0 +1,132 @@
+@model List<Application.DTOs.CompareItemDto>
+
+@{
+    ViewData["Title"] = "So sánh sản phẩm";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0"><i class="fa-solid fa-code-compare text-primary"></i> So sánh sản phẩm</h3>
+        @if (Model.Any())
+        {
+            <button class="btn btn-outline-danger btn-sm" id="btnClearCompare">
+                <i class="fa-solid fa-trash"></i> Xóa tất cả
+            </button>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Chưa có sản phẩm nào để so sánh.
+            <a asp-controller="Home" asp-action="Index" class="alert-link">Quay lại trang chủ</a>.
+        </div>
+    }
+    else if (Model.Count < 2)
+    {
+        <div class="alert alert-warning">
+            Cần ít nhất 2 sản phẩm để so sánh. Hiện tại có @Model.Count sản phẩm.
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 180px;">Thuộc tính</th>
+                        @foreach (var p in Model)
+                        {
+                            <th class="text-center" data-product-id="@p.ProductId">
+                                <img src="@(p.ImageUrl ?? "https://via.placeholder.com/120")" class="img-fluid mb-2" style="max-height:100px;object-fit:contain;" />
+                                <div class="fw-semibold mb-1">@p.Name</div>
+                                <div class="text-danger fw-bold mb-2">@p.Price.ToString("#,##0")₫</div>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-controller="Home" asp-action="Detail" asp-route-id="@p.ProductId" class="btn btn-outline-primary btn-sm">
+                                        Chi tiết
+                                    </a>
+                                    <button class="btn btn-outline-danger btn-sm btn-remove-compare" data-product-id="@p.ProductId">
+                                        Bỏ
+                                    </button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-semibold">Mã SP</td>
+                        @foreach (var p in Model) { <td>@p.Code</td> }
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold">Danh mục</td>
+                        @foreach (var p in Model) { <td>@(p.CategoryName ?? "-")</td> }
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold">Thương hiệu</td>
+                        @foreach (var p in Model) { <td>@(p.BrandName ?? "-")</td> }
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold">Tồn kho</td>
+                        @foreach (var p in Model) { <td>@p.Stock</td> }
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold">Mô tả ngắn</td>
+                        @foreach (var p in Model) { <td>@(p.ShortDescription ?? "-")</td> }
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold">Thông số</td>
+                        @foreach (var p in Model)
+                        {
+                            <td>
+                                @if (p.Specifications.Any())
+                                {
+                                    <ul class="mb-0 ps-3">
+                                        @foreach (var s in p.Specifications)
+                                        {
+                                            <li><strong>@s.Name:</strong> @s.Value</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.btn-remove-compare').on('click', function () {
+                var productId = $(this).data('product-id');
+                $.post('@Url.Action("Remove", "Compare")', { productId: productId }, function (res) {
+                    if (res.success) {
+                        updateCompareBadge(res.compareCount);
+                        location.reload();
+                    }
+                });
+            });
+
+            $('#btnClearCompare').on('click', function () {
+                $.post('@Url.Action("Clear", "Compare")', function (res) {
+                    if (res.success) {
+                        updateCompareBadge(0);
+                        location.reload();
+                    }
+                });
+            });
+
+            function updateCompareBadge(count) {
+                $('#compareCount').text(count);
+            }
+        });
+    </script>
+}

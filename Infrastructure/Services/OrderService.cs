@@ -25,7 +25,7 @@ namespace TechStore.Infrastructure.Services
             this.logger = logger;
         }
 
-
+        
         public async Task<bool> CancelOrderAsync(int orderId, string userId)
         {
             var order = await _context.Orders
@@ -227,7 +227,18 @@ namespace TechStore.Infrastructure.Services
 
         }
 
+        public async Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus status)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            if (order == null)
+            {
+                return false;
+            }
 
+            order.Status = status;
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
     }
 }

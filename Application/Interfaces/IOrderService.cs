@@ -1,9 +1,5 @@
 ﻿using Application.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TechStore.Domain.Enums;
 
 namespace Application.Interfaces
 {
@@ -14,5 +10,6 @@ namespace Application.Interfaces
         Task<List<OrderDto>> GetUserOrdersAsync(string userId);
         Task<bool> CancelOrderAsync(int orderId, string userId);
         Task<List<string>> ValidateStockAsync(List<CartItemDto> cartItems);
+        Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus status);
     }
 }

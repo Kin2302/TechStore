@@ -46,9 +46,15 @@ namespace TechStore.Infrastructure.Services
                 .Include(p => p.Brand)
                 .Include(p => p.Images)
                 .Include(p => p.Specifications)
+                .Include(p => p.Reviews)
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
             if (product == null) return null;
+
+            var validReviews = product.Reviews
+                .Where(r => !r.IsDeleted)
+                .OrderByDescending(r => r.CreatedDate)
+                .ToList();
 
             return new ProductDetailDto
             {
@@ -72,7 +78,18 @@ namespace TechStore.Infrastructure.Services
                 {
                     Name = s.Name,
                     Value = s.Value
-                }).ToList() ?? new()
+                }).ToList() ?? new(),
+                ReviewCount = validReviews.Count,
+                AverageRating = validReviews.Any()
+                    ? Math.Round(validReviews.Average(r => (decimal)r.Rating), 1)
+                    : 0m,
+                Reviews = validReviews.Select(r => new ReviewDto
+                {
+                    UserName = r.UserName,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedDate = r.CreatedDate
+                }).ToList()
             };
         }
 
@@ -135,7 +152,7 @@ namespace TechStore.Infrastructure.Services
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 var lowerKeyword = keyword.ToLower();
-                query = query.Where(p => 
+                query = query.Where(p =>
                     p.Name.ToLower().Contains(lowerKeyword) ||
                     p.Code.ToLower().Contains(lowerKeyword) ||
                     (p.Category != null && p.Category.Name.ToLower().Contains(lowerKeyword)) ||
@@ -186,11 +203,11 @@ namespace TechStore.Infrastructure.Services
 
             query = sortBy switch
             {
-                "price_asc"  => query.OrderBy(p => p.Price),
+                "price_asc" => query.OrderBy(p => p.Price),
                 "price_desc" => query.OrderByDescending(p => p.Price),
-                "newest"     => query.OrderByDescending(p => p.CreatedDate),
-                "popular"    => query.OrderByDescending(p => p.SoldCount),
-                _            => query.OrderBy(p => p.Name)
+                "newest" => query.OrderByDescending(p => p.CreatedDate),
+                "popular" => query.OrderByDescending(p => p.SoldCount),
+                _ => query.OrderBy(p => p.Name)
             };
 
             return await query
@@ -206,7 +223,39 @@ namespace TechStore.Infrastructure.Services
                 .ToListAsync();
         }
 
-        private static ProductDto MapToDto(TechStore.Domain.Entities.Product p)
+        public async Task<List<CompareItemDto>> GetCompareProductsAsync(List<int> productIds)
+        {
+            if (productIds == null || productIds.Count == 0)
+                return new List<CompareItemDto>();
+
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Images)
+                .Include(p => p.Specifications)
+                .Where(p => !p.IsDeleted && productIds.Contains(p.Id))
+                .Select(p => new CompareItemDto
+                {
+                    ProductId = p.Id,
+                    Name = p.Name,
+                    Code = p.Code,
+                    Price = p.Price,
+                    Stock = p.Stock,
+                    ImageUrl = p.Images.FirstOrDefault(i => i.IsMain)!.ImageUrl
+                             ?? p.Images.FirstOrDefault()!.ImageUrl,
+                    CategoryName = p.Category != null ? p.Category.Name : null,
+                    BrandName = p.Brand != null ? p.Brand.Name : null,
+                    ShortDescription = p.ShortDescription,
+                    Specifications = p.Specifications.Select(s => new ProductSpecDto
+                    {
+                        Name = s.Name,
+                        Value = s.Value
+                    }).ToList()
+                })
+                .ToListAsync();
+        }
+
+        private static ProductDto MapToDto(Product p)
         {
             return new ProductDto
             {
