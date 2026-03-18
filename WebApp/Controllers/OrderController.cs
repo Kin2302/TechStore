@@ -1,9 +1,15 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Application.DTOs.Admin;
+using Application.DTOs.Catalog;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Integration;
+using Application.Interfaces.Orders;
 
 namespace WebApp.Controllers
 {
@@ -64,7 +70,7 @@ namespace WebApp.Controllers
                 return RedirectToAction("Confirmation", new { id = result.OrderId });
             }
 
-            ModelState.AddModelError("", result.ErrorMessage ?? "Đặt hàng thất bại");
+            ModelState.AddModelError("", result.ErrorMessage ?? "�?t h�ng th?t b?i");
             foreach (var msg in result.OutOfStockProducts)
             {
                 ModelState.AddModelError("", msg);
@@ -114,11 +120,11 @@ namespace WebApp.Controllers
             var success = await _orderService.CancelOrderAsync(id, userId);
             if (!success)
             {
-                TempData["Error"] = "Không thể hủy đơn hàng này.";
+                TempData["Error"] = "Kh�ng th? h?y don h�ng n�y.";
                 return RedirectToAction("MyOrders");
             }
 
-            TempData["Success"] = "Đơn hàng đã được hủy.";
+            TempData["Success"] = "�on h�ng d� du?c h?y.";
             return RedirectToAction("MyOrders");
         }
     }

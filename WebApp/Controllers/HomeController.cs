@@ -1,7 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebApp.Models;
-using Application.Interfaces;
+using Application.DTOs.Admin;
+using Application.DTOs.Catalog;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Integration;
+using Application.Interfaces.Orders;
 
 namespace WebApp.Controllers
 {

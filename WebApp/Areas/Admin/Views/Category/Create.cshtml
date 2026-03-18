@@ -1,9 +1,9 @@
-﻿@model Application.DTOs.CategoryDto
+﻿@model Application.DTOs.Catalog.CategoryDto
 
 @{
     ViewData["Title"] = "Thêm danh mục";
-    var parents = ViewBag.ParentCategories as IEnumerable<Application.DTOs.CategoryDto>
-        ?? Enumerable.Empty<Application.DTOs.CategoryDto>();
+    var parents = ViewBag.ParentCategories as IEnumerable<Application.DTOs.Catalog.CategoryDto>
+        ?? Enumerable.Empty<Application.DTOs.Catalog.CategoryDto>();
 }
 
 <div class="d-flex align-items-center mb-4">

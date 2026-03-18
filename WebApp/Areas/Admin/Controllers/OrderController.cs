@@ -1,8 +1,15 @@
-﻿using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using TechStore.Domain.Enums;
+using Application.DTOs.Admin;
+using Application.DTOs.Catalog;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Integration;
+using Application.Interfaces.Orders;
 
 namespace WebApp.Areas.Admin.Controllers
 {
@@ -59,11 +66,11 @@ namespace WebApp.Areas.Admin.Controllers
             var result = await _adminOrderService.UpdateOrderStatusAsync(id, parsedStatus);
             if (!result)
             {
-                TempData["Error"] = "Không thể cập nhật trạng thái đơn hàng.";
+                TempData["Error"] = "Kh�ng th? c?p nh?t tr?ng th�i don h�ng.";
             }
             else
             {
-                TempData["Success"] = "Cập nhật trạng thái thành công!";
+                TempData["Success"] = "C?p nh?t tr?ng th�i th�nh c�ng!";
             }
             return RedirectToAction("Details", new { id });
         }

@@ -1,15 +1,15 @@
-﻿@model Application.DTOs.OrderDto
+@model Application.DTOs.Orders.OrderDto
 
 @{
-    ViewData["Title"] = $"Đơn hàng #{Model.Id}";
+    ViewData["Title"] = $"�on h�ng #{Model.Id}";
 }
 
 <div class="container py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
-            <li class="breadcrumb-item"><a asp-action="MyOrders" class="text-decoration-none">Đơn hàng của tôi</a></li>
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa-solid fa-house"></i> Trang ch?</a></li>
+            <li class="breadcrumb-item"><a asp-action="MyOrders" class="text-decoration-none">�on h�ng c?a t�i</a></li>
             <li class="breadcrumb-item active">#@Model.Id</li>
         </ol>
     </nav>
@@ -18,10 +18,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h2 class="mb-1">
-                <i class="fa-solid fa-file-invoice text-primary me-2"></i>Đơn hàng #@Model.Id
+                <i class="fa-solid fa-file-invoice text-primary me-2"></i>�on h�ng #@Model.Id
             </h2>
             <small class="text-muted">
-                <i class="fa-solid fa-calendar me-1"></i>Đặt ngày @Model.OrderDate.ToString("dd/MM/yyyy") lúc @Model.OrderDate.ToString("HH:mm")
+                <i class="fa-solid fa-calendar me-1"></i>�?t ng�y @Model.OrderDate.ToString("dd/MM/yyyy") l�c @Model.OrderDate.ToString("HH:mm")
             </small>
         </div>
         <span class="badge @Model.StatusBadgeClass fs-6 px-3 py-2">
@@ -35,10 +35,10 @@
             <div class="d-flex justify-content-between position-relative px-4">
                 @{
                     var steps = new[] {
-                        ("Pending", "Đặt hàng", "fa-clipboard-check"),
-                        ("Confirmed", "Xác nhận", "fa-circle-check"),
-                        ("Shipping", "Đang giao", "fa-truck-fast"),
-                        ("Completed", "Hoàn thành", "fa-flag-checkered")
+                        ("Pending", "�?t h�ng", "fa-clipboard-check"),
+                        ("Confirmed", "X�c nh?n", "fa-circle-check"),
+                        ("Shipping", "�ang giao", "fa-truck-fast"),
+                        ("Completed", "Ho�n th�nh", "fa-flag-checkered")
                     };
                     var statusOrder = new[] { "Pending", "Confirmed", "Shipping", "Completed" };
                     var currentIndex = Array.IndexOf(statusOrder, Model.Status);
@@ -85,19 +85,19 @@
     </div>
 
     <div class="row g-4">
-        <!-- Thông tin giao hàng -->
+        <!-- Th�ng tin giao h�ng -->
         <div class="col-lg-5">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-white border-bottom">
-                    <h5 class="mb-0"><i class="fa-solid fa-truck text-primary me-2"></i>Thông tin giao hàng</h5>
+                    <h5 class="mb-0"><i class="fa-solid fa-truck text-primary me-2"></i>Th�ng tin giao h�ng</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <small class="text-muted text-uppercase">Người nhận</small>
+                        <small class="text-muted text-uppercase">Ngu?i nh?n</small>
                         <p class="mb-0 fw-semibold"><i class="fa-solid fa-user me-2 text-muted"></i>@Model.FullName</p>
                     </div>
                     <div class="mb-3">
-                        <small class="text-muted text-uppercase">Số điện thoại</small>
+                        <small class="text-muted text-uppercase">S? di?n tho?i</small>
                         <p class="mb-0 fw-semibold"><i class="fa-solid fa-phone me-2 text-muted"></i>@Model.PhoneNumber</p>
                     </div>
                     <div class="mb-3">
@@ -105,18 +105,18 @@
                         <p class="mb-0 fw-semibold"><i class="fa-solid fa-envelope me-2 text-muted"></i>@Model.Email</p>
                     </div>
                     <div class="mb-3">
-                        <small class="text-muted text-uppercase">Địa chỉ</small>
+                        <small class="text-muted text-uppercase">�?a ch?</small>
                         <p class="mb-0 fw-semibold"><i class="fa-solid fa-location-dot me-2 text-muted"></i>@Model.ShippingAddress</p>
                     </div>
                     @if (!string.IsNullOrEmpty(Model.Note))
                     {
                         <div class="mb-3">
-                            <small class="text-muted text-uppercase">Ghi chú</small>
+                            <small class="text-muted text-uppercase">Ghi ch�</small>
                             <p class="mb-0"><i class="fa-solid fa-note-sticky me-2 text-muted"></i>@Model.Note</p>
                         </div>
                     }
                     <div>
-                        <small class="text-muted text-uppercase">Thanh toán</small>
+                        <small class="text-muted text-uppercase">Thanh to�n</small>
                         <p class="mb-0">
                             <i class="fa-solid fa-credit-card me-2 text-muted"></i>
                             <span class="badge bg-info">@Model.PaymentMethodDisplay</span>
@@ -126,11 +126,11 @@
             </div>
         </div>
 
-        <!-- Chi tiết sản phẩm -->
+        <!-- Chi ti?t s?n ph?m -->
         <div class="col-lg-7">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white border-bottom">
-                    <h5 class="mb-0"><i class="fa-solid fa-box text-warning me-2"></i>Sản phẩm đã đặt</h5>
+                    <h5 class="mb-0"><i class="fa-solid fa-box text-warning me-2"></i>S?n ph?m d� d?t</h5>
                 </div>
                 <div class="card-body p-0">
                     @foreach (var item in Model.Items)
@@ -146,29 +146,29 @@
                                     @item.ProductName
                                 </a>
                                 <small class="text-muted">
-                                    Đơn giá: @item.Price.ToString("#,##0")₫ × @item.Quantity
+                                    �on gi�: @item.Price.ToString("#,##0")? � @item.Quantity
                                 </small>
                             </div>
                             <div class="text-end">
-                                <span class="fw-bold text-danger">@item.Total.ToString("#,##0")₫</span>
+                                <span class="fw-bold text-danger">@item.Total.ToString("#,##0")?</span>
                             </div>
                         </div>
                     }
 
-                    <!-- Tổng tiền -->
+                    <!-- T?ng ti?n -->
                     <div class="p-3 bg-light">
                         <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted">Tạm tính (@Model.Items.Count sản phẩm):</span>
-                            <span>@Model.TotalAmount.ToString("#,##0")₫</span>
+                            <span class="text-muted">T?m t�nh (@Model.Items.Count s?n ph?m):</span>
+                            <span>@Model.TotalAmount.ToString("#,##0")?</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Phí vận chuyển:</span>
-                            <span class="text-success">Miễn phí</span>
+                            <span class="text-muted">Ph� v?n chuy?n:</span>
+                            <span class="text-success">Mi?n ph�</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between">
-                            <strong class="fs-5">Tổng cộng:</strong>
-                            <strong class="fs-4 text-danger">@Model.TotalAmount.ToString("#,##0")₫</strong>
+                            <strong class="fs-5">T?ng c?ng:</strong>
+                            <strong class="fs-4 text-danger">@Model.TotalAmount.ToString("#,##0")?</strong>
                         </div>
                     </div>
                 </div>
@@ -179,20 +179,20 @@
     <!-- Action Buttons -->
     <div class="d-flex justify-content-between mt-4 flex-wrap gap-2">
         <a asp-action="MyOrders" class="btn btn-outline-primary">
-            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại đơn hàng
+            <i class="fa-solid fa-arrow-left me-1"></i> Quay l?i don h�ng
         </a>
         <div class="d-flex gap-2">
             @if (Model.Status == "Pending")
             {
                 <form asp-action="Cancel" asp-route-id="@Model.Id" method="post"
-                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng #@Model.Id?')">
+                      onsubmit="return confirm('B?n c� ch?c ch?n mu?n h?y don h�ng #@Model.Id?')">
                     <button type="submit" class="btn btn-danger">
-                        <i class="fa-solid fa-ban me-1"></i> Hủy đơn hàng
+                        <i class="fa-solid fa-ban me-1"></i> H?y don h�ng
                     </button>
                 </form>
             }
             <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
-                <i class="fa-solid fa-shopping-bag me-1"></i> Tiếp tục mua sắm
+                <i class="fa-solid fa-shopping-bag me-1"></i> Ti?p t?c mua s?m
             </a>
         </div>
     </div>

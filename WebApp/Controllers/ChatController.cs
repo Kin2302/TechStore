@@ -1,5 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Application.Interfaces.Integration;
+using Application.DTOs.Admin;
+using Application.DTOs.Catalog;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Orders;
 
 namespace WebApp.Controllers
 {
@@ -47,7 +54,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> Chat([FromBody] ChatRequestModel request)
         {
             if (string.IsNullOrWhiteSpace(request.Message))
-                return BadRequest(new { error = "Tin nhắn không được để trống" });
+                return BadRequest(new { error = "Tin nh?n kh�ng du?c d? tr?ng" });
 
             try
             {
@@ -66,7 +73,7 @@ namespace WebApp.Controllers
                 _logger.LogError(ex, "Error in Chat: {Message}", ex.Message);
                 return Ok(new ChatResponseModel
                 {
-                    Reply = $"⚠️ Xin lỗi, đã xảy ra lỗi: {ex.Message}",
+                    Reply = $"?? Xin l?i, d� x?y ra l?i: {ex.Message}",
                     Success = false
                 });
             }

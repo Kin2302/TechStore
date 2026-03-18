@@ -1,8 +1,14 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
+using Application.DTOs.Catalog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Application.DTOs.Admin;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Integration;
+using Application.Interfaces.Orders;
 
 namespace WebApp.Areas.Admin.Controllers
 {
@@ -44,7 +50,7 @@ namespace WebApp.Areas.Admin.Controllers
 
             var imageUrl = await UploadImageAsync(mainImage);
             await _adminProductService.CreateAsync(model, imageUrl);
-            TempData["SuccessMessage"] = "Thêm sản phẩm thành công!";
+            TempData["SuccessMessage"] = "Th�m s?n ph?m th�nh c�ng!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -69,7 +75,7 @@ namespace WebApp.Areas.Admin.Controllers
             }
             var imageUrl = await UploadImageAsync(mainImage);
             await _adminProductService.UpdateAsync(model, imageUrl);
-            TempData["SuccessMessage"] = "Cập nhật sản phẩm thành công!";
+            TempData["SuccessMessage"] = "C?p nh?t s?n ph?m th�nh c�ng!";
             return RedirectToAction(nameof(Index));
 
         }
@@ -78,7 +84,7 @@ namespace WebApp.Areas.Admin.Controllers
         {
             await _adminProductService.DeleteAsync(id);
        
-            TempData["SuccessMessage"] = "Xóa sản phẩm thành công!";
+            TempData["SuccessMessage"] = "X�a s?n ph?m th�nh c�ng!";
             return RedirectToAction(nameof(Index));
         }
 
