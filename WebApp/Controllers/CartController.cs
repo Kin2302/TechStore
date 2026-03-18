@@ -1,6 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Application.Interfaces;
-using Application.DTOs;
+using Microsoft.AspNetCore.Mvc;
+using Application.Interfaces.Orders;
+using Application.DTOs.Admin;
+using Application.DTOs.Catalog;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Integration;
 
 namespace WebApp.Controllers
 {
@@ -13,14 +19,14 @@ namespace WebApp.Controllers
             _cartService = cartService;
         }
 
-        // Hiển thị giỏ hàng
+        // Hi?n th? gi? h�ng
         public IActionResult Index()
         {
             var cart = _cartService.GetCart();
             return View(cart);
         }
 
-        // Thêm sản phẩm vào giỏ
+        // Th�m s?n ph?m v�o gi?
         [HttpPost]
         public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
         {
@@ -54,7 +60,7 @@ namespace WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        // Cập nhật số lượng
+        // C?p nh?t s? lu?ng
         [HttpPost]
         public IActionResult UpdateQuantity(int productId, int quantity)
         {
@@ -83,7 +89,7 @@ namespace WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        // Xóa sản phẩm khỏi giỏ
+        // X�a s?n ph?m kh?i gi?
         [HttpPost]
         public IActionResult RemoveFromCart(int productId)
         {
@@ -104,7 +110,7 @@ namespace WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        // Xóa toàn bộ giỏ hàng
+        // X�a to�n b? gi? h�ng
         [HttpPost]
         public IActionResult ClearCart()
         {
@@ -112,7 +118,7 @@ namespace WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        // Lấy số lượng trong giỏ
+        // L?y s? lu?ng trong gi?
         [HttpGet]
         public IActionResult GetCartCount()
         {

@@ -1,22 +1,22 @@
-﻿@model Application.DTOs.OrderDto
+@model Application.DTOs.Orders.OrderDto
 
 @{
-    ViewData["Title"] = $"Đơn hàng #{Model.Id}";
+    ViewData["Title"] = $"�on h�ng #{Model.Id}";
     var validStatuses = ViewBag.ValidStatuses as List<TechStore.Domain.Enums.OrderStatus> ?? new List<TechStore.Domain.Enums.OrderStatus>();
 }
 
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <h4 class="mb-1"><i class="fa-solid fa-file-invoice me-2"></i>Đơn hàng #@Model.Id</h4>
+        <h4 class="mb-1"><i class="fa-solid fa-file-invoice me-2"></i>�on h�ng #@Model.Id</h4>
         <small class="text-muted">
-            <i class="fa-solid fa-calendar me-1"></i>Đặt lúc @Model.OrderDate.ToString("HH:mm dd/MM/yyyy")
+            <i class="fa-solid fa-calendar me-1"></i>�?t l�c @Model.OrderDate.ToString("HH:mm dd/MM/yyyy")
         </small>
     </div>
     <div class="d-flex align-items-center gap-2">
         <span class="badge @Model.StatusBadgeClass fs-6 px-3 py-2">@Model.StatusDisplay</span>
         <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
-            <i class="fa-solid fa-arrow-left me-1"></i>Quay lại
+            <i class="fa-solid fa-arrow-left me-1"></i>Quay l?i
         </a>
     </div>
 </div>
@@ -38,14 +38,14 @@
 }
 
 <div class="row g-4">
-    <!-- Cột trái: Thông tin -->
+    <!-- C?t tr�i: Th�ng tin -->
     <div class="col-lg-5">
-        <!-- Cập nhật trạng thái -->
+        <!-- C?p nh?t tr?ng th�i -->
         @if (validStatuses.Any())
         {
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white border-bottom">
-                    <h6 class="mb-0"><i class="fa-solid fa-arrows-rotate text-primary me-2"></i>Cập nhật trạng thái</h6>
+                    <h6 class="mb-0"><i class="fa-solid fa-arrows-rotate text-primary me-2"></i>C?p nh?t tr?ng th�i</h6>
                 </div>
                 <div class="card-body">
                     <div class="d-flex gap-2 flex-wrap">
@@ -61,10 +61,10 @@
                             };
                             var statusLabel = nextStatus switch
                             {
-                                TechStore.Domain.Enums.OrderStatus.Confirmed => "Xác nhận",
-                                TechStore.Domain.Enums.OrderStatus.Shipping => "Giao hàng",
-                                TechStore.Domain.Enums.OrderStatus.Completed => "Hoàn thành",
-                                TechStore.Domain.Enums.OrderStatus.Cancelled => "Hủy đơn",
+                                TechStore.Domain.Enums.OrderStatus.Confirmed => "X�c nh?n",
+                                TechStore.Domain.Enums.OrderStatus.Shipping => "Giao h�ng",
+                                TechStore.Domain.Enums.OrderStatus.Completed => "Ho�n th�nh",
+                                TechStore.Domain.Enums.OrderStatus.Cancelled => "H?y don",
                                 _ => nextStatus.ToString()
                             };
                             var icon = nextStatus switch
@@ -76,8 +76,8 @@
                                 _ => "fa-circle"
                             };
                             var confirmMsg = nextStatus == TechStore.Domain.Enums.OrderStatus.Cancelled
-                                ? $"Bạn có chắc muốn HỦY đơn hàng #{Model.Id}?"
-                                : $"Chuyển đơn #{Model.Id} sang '{statusLabel}'?";
+                                ? $"B?n c� ch?c mu?n H?Y don h�ng #{Model.Id}?"
+                                : $"Chuy?n don #{Model.Id} sang '{statusLabel}'?";
 
                             <form asp-action="UpdateStatus" method="post" class="d-inline"
                                   onsubmit="return confirm('@confirmMsg')">
@@ -95,22 +95,22 @@
         else
         {
             <div class="alert alert-secondary mb-4">
-                <i class="fa-solid fa-lock me-2"></i>Đơn hàng đã ở trạng thái cuối, không thể cập nhật.
+                <i class="fa-solid fa-lock me-2"></i>�on h�ng d� ? tr?ng th�i cu?i, kh�ng th? c?p nh?t.
             </div>
         }
 
-        <!-- Thông tin khách hàng -->
+        <!-- Th�ng tin kh�ch h�ng -->
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white border-bottom">
-                <h6 class="mb-0"><i class="fa-solid fa-user text-primary me-2"></i>Thông tin giao hàng</h6>
+                <h6 class="mb-0"><i class="fa-solid fa-user text-primary me-2"></i>Th�ng tin giao h�ng</h6>
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <small class="text-muted text-uppercase">Người nhận</small>
+                    <small class="text-muted text-uppercase">Ngu?i nh?n</small>
                     <p class="mb-0 fw-semibold"><i class="fa-solid fa-user me-2 text-muted"></i>@Model.FullName</p>
                 </div>
                 <div class="mb-3">
-                    <small class="text-muted text-uppercase">Số điện thoại</small>
+                    <small class="text-muted text-uppercase">S? di?n tho?i</small>
                     <p class="mb-0 fw-semibold"><i class="fa-solid fa-phone me-2 text-muted"></i>@Model.PhoneNumber</p>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Email))
@@ -121,18 +121,18 @@
                     </div>
                 }
                 <div class="mb-3">
-                    <small class="text-muted text-uppercase">Địa chỉ</small>
+                    <small class="text-muted text-uppercase">�?a ch?</small>
                     <p class="mb-0 fw-semibold"><i class="fa-solid fa-location-dot me-2 text-muted"></i>@Model.ShippingAddress</p>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Note))
                 {
                     <div class="mb-3">
-                        <small class="text-muted text-uppercase">Ghi chú</small>
+                        <small class="text-muted text-uppercase">Ghi ch�</small>
                         <p class="mb-0"><i class="fa-solid fa-note-sticky me-2 text-muted"></i>@Model.Note</p>
                     </div>
                 }
                 <div>
-                    <small class="text-muted text-uppercase">Thanh toán</small>
+                    <small class="text-muted text-uppercase">Thanh to�n</small>
                     <p class="mb-0">
                         <i class="fa-solid fa-credit-card me-2 text-muted"></i>
                         <span class="badge bg-info">@Model.PaymentMethodDisplay</span>
@@ -142,21 +142,21 @@
         </div>
     </div>
 
-    <!-- Cột phải: Sản phẩm -->
+    <!-- C?t ph?i: S?n ph?m -->
     <div class="col-lg-7">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="fa-solid fa-box text-warning me-2"></i>Sản phẩm (@Model.Items.Count)</h6>
+                <h6 class="mb-0"><i class="fa-solid fa-box text-warning me-2"></i>S?n ph?m (@Model.Items.Count)</h6>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
                             <th style="width:60px;"></th>
-                            <th>Sản phẩm</th>
+                            <th>S?n ph?m</th>
                             <th class="text-center" style="width:80px;">SL</th>
-                            <th class="text-end" style="width:120px;">Đơn giá</th>
-                            <th class="text-end" style="width:130px;">Thành tiền</th>
+                            <th class="text-end" style="width:120px;">�on gi�</th>
+                            <th class="text-end" style="width:130px;">Th�nh ti?n</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -173,28 +173,28 @@
                                         @item.ProductName
                                     </a>
                                 </td>
-                                <td class="text-center">×@item.Quantity</td>
-                                <td class="text-end">@item.Price.ToString("#,##0")₫</td>
-                                <td class="text-end fw-bold text-danger">@item.Total.ToString("#,##0")₫</td>
+                                <td class="text-center">�@item.Quantity</td>
+                                <td class="text-end">@item.Price.ToString("#,##0")?</td>
+                                <td class="text-end fw-bold text-danger">@item.Total.ToString("#,##0")?</td>
                             </tr>
                         }
                     </tbody>
                 </table>
 
-                <!-- Tổng tiền -->
+                <!-- T?ng ti?n -->
                 <div class="p-3 bg-light border-top">
                     <div class="d-flex justify-content-between mb-1">
-                        <span class="text-muted">Tạm tính (@Model.Items.Count sản phẩm):</span>
-                        <span>@Model.TotalAmount.ToString("#,##0")₫</span>
+                        <span class="text-muted">T?m t�nh (@Model.Items.Count s?n ph?m):</span>
+                        <span>@Model.TotalAmount.ToString("#,##0")?</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Phí vận chuyển:</span>
-                        <span class="text-success">Miễn phí</span>
+                        <span class="text-muted">Ph� v?n chuy?n:</span>
+                        <span class="text-success">Mi?n ph�</span>
                     </div>
                     <hr class="my-2">
                     <div class="d-flex justify-content-between">
-                        <strong class="fs-5">Tổng cộng:</strong>
-                        <strong class="fs-4 text-danger">@Model.TotalAmount.ToString("#,##0")₫</strong>
+                        <strong class="fs-5">T?ng c?ng:</strong>
+                        <strong class="fs-4 text-danger">@Model.TotalAmount.ToString("#,##0")?</strong>
                     </div>
                 </div>
             </div>

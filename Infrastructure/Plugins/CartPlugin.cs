@@ -1,11 +1,19 @@
-﻿using System.ComponentModel;
+using Application.DTOs.Admin;
+using Application.DTOs.Catalog;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Integration;
+using Application.Interfaces.Orders;
+using System.ComponentModel;
 using Application.Interfaces;
 using Microsoft.SemanticKernel;
 
 namespace TechStore.Infrastructure.Plugins
 {
     /// <summary>
-    /// Plugin cho AI Agent để quản lý giỏ hàng
+    /// Plugin cho AI Agent d? qu?n l� gi? h�ng
     /// </summary>
     public class CartPlugin
     {
@@ -17,17 +25,17 @@ namespace TechStore.Infrastructure.Plugins
         }
 
         [KernelFunction("add_to_cart")]
-        [Description("Thêm sản phẩm vào giỏ hàng. Trả về thông tin giỏ hàng sau khi thêm.")]
+        [Description("Th�m s?n ph?m v�o gi? h�ng. Tr? v? th�ng tin gi? h�ng sau khi th�m.")]
         public async Task<string> AddToCartAsync(
-            [Description("ID của sản phẩm cần thêm vào giỏ")] 
+            [Description("ID c?a s?n ph?m c?n th�m v�o gi?")] 
             int productId,
             
-            [Description("Số lượng cần thêm (mặc định là 1)")] 
+            [Description("S? lu?ng c?n th�m (m?c d?nh l� 1)")] 
             int quantity = 1)
         {
             try
             {
-                // Lấy thông tin sản phẩm
+                // L?y th�ng tin s?n ph?m
                 var productInfo = await _cartService.GetProductForCartAsync(productId);
                 
                 if (productInfo == null)
@@ -35,14 +43,14 @@ namespace TechStore.Infrastructure.Plugins
                     return System.Text.Json.JsonSerializer.Serialize(new
                     {
                         success = false,
-                        message = $"❌ Không tìm thấy sản phẩm với ID {productId}"
+                        message = $"? Kh�ng t�m th?y s?n ph?m v?i ID {productId}"
                     });
                 }
 
-                // Lấy giỏ hàng hiện tại
+                // L?y gi? h�ng hi?n t?i
                 var cart = _cartService.GetCart();
                 
-                // Kiểm tra sản phẩm đã có trong giỏ chưa
+                // Ki?m tra s?n ph?m d� c� trong gi? chua
                 var existingItem = cart.FirstOrDefault(x => x.ProductId == productId);
                 
                 if (existingItem != null)
@@ -55,7 +63,7 @@ namespace TechStore.Infrastructure.Plugins
                     cart.Add(productInfo);
                 }
 
-                // Lưu giỏ hàng
+                // Luu gi? h�ng
                 _cartService.SaveCart(cart);
 
                 var cartTotal = _cartService.GetCartTotal();
@@ -64,7 +72,7 @@ namespace TechStore.Infrastructure.Plugins
                 return System.Text.Json.JsonSerializer.Serialize(new
                 {
                     success = true,
-                    message = $"✅ Đã thêm {quantity}x {productInfo.ProductName} vào giỏ hàng!",
+                    message = $"? �� th�m {quantity}x {productInfo.ProductName} v�o gi? h�ng!",
                     productName = productInfo.ProductName,
                     productPrice = productInfo.Price,
                     quantity = quantity,
@@ -78,15 +86,15 @@ namespace TechStore.Infrastructure.Plugins
                 return System.Text.Json.JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"❌ Lỗi: {ex.Message}"
+                    message = $"? L?i: {ex.Message}"
                 });
             }
         }
 
         [KernelFunction("remove_from_cart")]
-        [Description("Xóa sản phẩm khỏi giỏ hàng")]
+        [Description("X�a s?n ph?m kh?i gi? h�ng")]
         public Task<string> RemoveFromCartAsync(
-            [Description("ID của sản phẩm cần xóa")] 
+            [Description("ID c?a s?n ph?m c?n x�a")] 
             int productId)
         {
             var cart = _cartService.GetCart();
@@ -97,7 +105,7 @@ namespace TechStore.Infrastructure.Plugins
                 return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = "❌ Sản phẩm không có trong giỏ hàng"
+                    message = "? S?n ph?m kh�ng c� trong gi? h�ng"
                 }));
             }
 
@@ -107,13 +115,13 @@ namespace TechStore.Infrastructure.Plugins
             return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(new
             {
                 success = true,
-                message = $"✅ Đã xóa {item.ProductName} khỏi giỏ hàng",
+                message = $"? �� x�a {item.ProductName} kh?i gi? h�ng",
                 cartCount = _cartService.GetCartCount()
             }));
         }
 
         [KernelFunction("view_cart")]
-        [Description("Xem nội dung giỏ hàng hiện tại")]
+        [Description("Xem n?i dung gi? h�ng hi?n t?i")]
         public Task<string> GetCartAsync()
         {
             var cart = _cartService.GetCart();
@@ -123,7 +131,7 @@ namespace TechStore.Infrastructure.Plugins
                 return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(new
                 {
                     success = true,
-                    message = "🛒 Giỏ hàng trống",
+                    message = "?? Gi? h�ng tr?ng",
                     items = Array.Empty<object>(),
                     total = 0,
                     count = 0
@@ -142,7 +150,7 @@ namespace TechStore.Infrastructure.Plugins
             return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(new
             {
                 success = true,
-                message = $"🛒 Giỏ hàng có {cart.Count} sản phẩm",
+                message = $"?? Gi? h�ng c� {cart.Count} s?n ph?m",
                 items = items,
                 total = _cartService.GetCartTotal(),
                 count = _cartService.GetCartCount()
@@ -150,7 +158,7 @@ namespace TechStore.Infrastructure.Plugins
         }
 
         [KernelFunction("clear_cart")]
-        [Description("Xóa toàn bộ giỏ hàng")]
+        [Description("X�a to�n b? gi? h�ng")]
         public Task<string> ClearCartAsync()
         {
             _cartService.ClearCart();
@@ -158,17 +166,17 @@ namespace TechStore.Infrastructure.Plugins
             return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(new
             {
                 success = true,
-                message = "✅ Đã xóa toàn bộ giỏ hàng"
+                message = "? �� x�a to�n b? gi? h�ng"
             }));
         }
 
         [KernelFunction("update_cart_quantity")]
-        [Description("Cập nhật số lượng sản phẩm trong giỏ hàng")]
+        [Description("C?p nh?t s? lu?ng s?n ph?m trong gi? h�ng")]
         public Task<string> UpdateCartQuantityAsync(
-            [Description("ID của sản phẩm")] 
+            [Description("ID c?a s?n ph?m")] 
             int productId,
             
-            [Description("Số lượng mới")] 
+            [Description("S? lu?ng m?i")] 
             int newQuantity)
         {
             if (newQuantity <= 0)
@@ -184,7 +192,7 @@ namespace TechStore.Infrastructure.Plugins
                 return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = "❌ Sản phẩm không có trong giỏ hàng"
+                    message = "? S?n ph?m kh�ng c� trong gi? h�ng"
                 }));
             }
 
@@ -194,7 +202,7 @@ namespace TechStore.Infrastructure.Plugins
             return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(new
             {
                 success = true,
-                message = $"✅ Đã cập nhật số lượng {item.ProductName} thành {newQuantity}",
+                message = $"? �� c?p nh?t s? lu?ng {item.ProductName} th�nh {newQuantity}",
                 newTotal = item.Total,
                 cartTotal = _cartService.GetCartTotal()
             }));

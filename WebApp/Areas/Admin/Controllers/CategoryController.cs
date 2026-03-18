@@ -1,7 +1,13 @@
-Ôªøusing Application.DTOs;
-using Application.Interfaces;
+using Application.DTOs.Catalog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Application.DTOs.Admin;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Integration;
+using Application.Interfaces.Orders;
 
 namespace WebApp.Areas.Admin.Controllers
 {
@@ -40,7 +46,7 @@ namespace WebApp.Areas.Admin.Controllers
             }
 
             await _categoryService.CreateAsync(model);
-            TempData["SuccessMessage"] = "Th√™m danh m·ª•c th√†nh c√¥ng!";
+            TempData["SuccessMessage"] = "ThÍm danh m?c th‡nh cÙng!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -64,7 +70,7 @@ namespace WebApp.Areas.Admin.Controllers
             }
 
             await _categoryService.UpdateAsync(model);
-            TempData["SuccessMessage"] = "C·∫≠p nh·∫≠t danh m·ª•c th√†nh c√¥ng!";
+            TempData["SuccessMessage"] = "C?p nh?t danh m?c th‡nh cÙng!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -72,7 +78,7 @@ namespace WebApp.Areas.Admin.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _categoryService.DeleteAsync(id);
-            TempData["SuccessMessage"] = "X√≥a danh m·ª•c th√†nh c√¥ng!";
+            TempData["SuccessMessage"] = "XÛa danh m?c th‡nh cÙng!";
             return RedirectToAction(nameof(Index));
         }
 
