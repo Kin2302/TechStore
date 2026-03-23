@@ -1,13 +1,6 @@
 using Application.DTOs.Admin;
 using Application.DTOs.Catalog;
-using Application.DTOs.Integration;
-using Application.DTOs.Orders;
 using Application.Interfaces.Admin;
-using Application.Interfaces.Catalog;
-using Application.Interfaces.Integration;
-using Application.Interfaces.Orders;
-using Application.DTOs;
-using Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Domain.Entities;
 using TechStore.Infrastructure.Data;
@@ -56,7 +49,6 @@ namespace TechStore.Infrastructure.Services
                 product.Images.Add(image);
             }
 
-            // Thêm specs TRU?C SaveChanges
             foreach (var spec in dto.Specifications.Where(s => !string.IsNullOrEmpty(s.Name)))
             {
                 product.Specifications.Add(new ProductSpecification
@@ -67,7 +59,7 @@ namespace TechStore.Infrastructure.Services
             }
 
             await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();  // ? Luu product + images + specs cùng lúc
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
@@ -155,7 +147,7 @@ namespace TechStore.Infrastructure.Services
         {
             var product = await _context.Products
                 .Include(p => p.Images)
-                .Include(p => p.Specifications)  // ? THÊM
+                .Include(p => p.Specifications)
                 .FirstOrDefaultAsync(p => p.Id == dto.Id && !p.IsDeleted);
 
             if (product == null) return;
@@ -194,10 +186,8 @@ namespace TechStore.Infrastructure.Services
                 }
             }
 
-            // Xóa specs cu
             product.Specifications.Clear();
 
-            // Thêm specs m?i
             foreach (var spec in dto.Specifications.Where(s => !string.IsNullOrEmpty(s.Name)))
             {
                 product.Specifications.Add(new ProductSpecification
@@ -208,6 +198,37 @@ namespace TechStore.Infrastructure.Services
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<ProductDto>> GetLowStockProductsAsync(int threshold)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Where(p => !p.IsDeleted && p.Stock <= threshold && p.Stock >= 0)
+                .OrderBy(p => p.Stock)
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Code = p.Code,
+                    Price = p.Price,
+                    Stock = p.Stock,
+                    CategoryName = p.Category != null ? p.Category.Name : null,
+                    BrandName = p.Brand != null ? p.Brand.Name : null
+                })
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateProductStockAsync(int productId, int newQuantity)
+        {
+            var product = await _context.Products.FindAsync(productId);
+            if (product == null || product.IsDeleted) return false;
+
+            product.Stock = newQuantity;
+            product.UpdatedDate = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

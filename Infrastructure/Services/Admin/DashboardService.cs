@@ -1,13 +1,7 @@
 using Application.DTOs.Admin;
 using Application.DTOs.Catalog;
-using Application.DTOs.Integration;
 using Application.DTOs.Orders;
 using Application.Interfaces.Admin;
-using Application.Interfaces.Catalog;
-using Application.Interfaces.Integration;
-using Application.Interfaces.Orders;
-using Application.DTOs;
-using Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Domain.Enums;
 using TechStore.Infrastructure.Data;
@@ -27,7 +21,6 @@ namespace TechStore.Infrastructure.Services
         {
             var today = DateTime.UtcNow.Date;
 
-            // Stat cards
             var totalOrders = await _context.Orders.CountAsync();
             var pendingOrders = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Pending);
             var confirmedOrders = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Confirmed);
@@ -46,7 +39,6 @@ namespace TechStore.Infrastructure.Services
             var totalProducts = await _context.Products.CountAsync(p => !p.IsDeleted);
             var lowStockProducts = await _context.Products.CountAsync(p => !p.IsDeleted && p.Stock <= 5 && p.Stock > 0);
 
-            // Ðon hàng g?n dây (5 don m?i nh?t)
             var recentOrdersDb = await _context.Orders
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Product)
@@ -74,7 +66,6 @@ namespace TechStore.Infrastructure.Services
                 }).ToList()
             }).ToList();
 
-            // SP bán ch?y (top 5 t? OrderDetail dã Completed)
             var topProducts = await _context.OrderDetails
                 .Where(od => od.Order.Status == OrderStatus.Completed)
                 .GroupBy(od => new { od.ProductId, od.Product.Name })
@@ -89,7 +80,6 @@ namespace TechStore.Infrastructure.Services
                 .Take(5)
                 .ToListAsync();
 
-            // L?y ?nh cho top products
             var topProductIds = topProducts.Select(p => p.ProductId).ToList();
             var productImages = await _context.ProductImages
                 .Where(pi => topProductIds.Contains(pi.ProductId))
@@ -116,6 +106,60 @@ namespace TechStore.Infrastructure.Services
                 LowStockProducts = lowStockProducts,
                 RecentOrders = recentOrders,
                 TopProducts = topProducts
+            };
+        }
+
+        public async Task<RevenueReportDto> GetRevenueReportAsync(DateTime startDate, DateTime endDate)
+        {
+            var orders = _context.Orders
+                .Where(o => o.OrderDate.Date >= startDate.Date && o.OrderDate.Date <= endDate.Date);
+
+            var totalOrders = await orders.CountAsync();
+            var completedOrders = await orders.CountAsync(o => o.Status == OrderStatus.Completed);
+            var cancelledOrders = await orders.CountAsync(o => o.Status == OrderStatus.Cancelled);
+            var totalRevenue = await orders
+                .Where(o => o.Status == OrderStatus.Completed)
+                .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+
+            return new RevenueReportDto
+            {
+                TotalRevenue = totalRevenue,
+                TotalOrders = totalOrders,
+                CompletedOrders = completedOrders,
+                CancelledOrders = cancelledOrders,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+        }
+
+        public async Task<List<TopProductDto>> GetBestSellingProductsAsync(int limit)
+        {
+            return await _context.OrderDetails
+                .Where(od => od.Order.Status == OrderStatus.Completed)
+                .GroupBy(od => new { od.ProductId, od.Product.Name })
+                .Select(g => new TopProductDto
+                {
+                    ProductId = g.Key.ProductId,
+                    ProductName = g.Key.Name,
+                    TotalSold = g.Sum(od => od.Quantity),
+                    Revenue = g.Sum(od => od.Price * od.Quantity)
+                })
+                .OrderByDescending(x => x.TotalSold)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        public async Task<OrderStatisticsDto> GetOrderStatisticsAsync()
+        {
+            return new OrderStatisticsDto
+            {
+                PendingCount = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Pending),
+                ConfirmedCount = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Confirmed),
+                ShippingCount = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Shipping),
+                CompletedCount = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Completed),
+                CancelledCount = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Cancelled),
+                RefundedCount = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Refunded),
+                TotalCount = await _context.Orders.CountAsync()
             };
         }
     }

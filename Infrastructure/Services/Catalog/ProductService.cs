@@ -263,6 +263,16 @@ namespace TechStore.Infrastructure.Services
                 .ToListAsync();
         }
 
+        public async Task<int> GetProductStockAsync(int productId)
+        {
+            var product = await _context.Products
+                .Where(p => p.Id == productId && !p.IsDeleted)
+                .Select(p => new { p.Stock })
+                .FirstOrDefaultAsync();
+
+            return product?.Stock ?? 0;
+        }
+
         private static ProductDto MapToDto(Product p)
         {
             return new ProductDto

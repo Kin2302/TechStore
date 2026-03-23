@@ -1,12 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.Interfaces.Integration;
-using Application.DTOs.Admin;
-using Application.DTOs.Catalog;
-using Application.DTOs.Integration;
-using Application.DTOs.Orders;
-using Application.Interfaces.Admin;
-using Application.Interfaces.Catalog;
-using Application.Interfaces.Orders;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace WebApp.Controllers
 {
@@ -23,48 +18,30 @@ namespace WebApp.Controllers
             _logger = logger;
         }
 
-        [HttpGet("health")]
-        public IActionResult HealthCheck()
-        {
-            return Ok(new { status = "healthy", service = "ChatController", timestamp = DateTime.UtcNow });
-        }
-
-        [HttpPost("test")]
-        public async Task<IActionResult> TestConnection()
-        {
-            try
-            {
-                _logger.LogInformation("=== Test Connection Start ===");
-                var result = await _geminiService.ChatAsync("Hello, are you working?");
-                return Ok(new { success = true, message = "AI connection OK", response = result });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Test connection failed");
-                return Ok(new { 
-                    success = false, 
-                    error = ex.Message,
-                    type = ex.GetType().Name,
-                    stackTrace = ex.StackTrace 
-                });
-            }
-        }                   
-
         [HttpPost("chat")]
         public async Task<IActionResult> Chat([FromBody] ChatRequestModel request)
         {
-            if (string.IsNullOrWhiteSpace(request.Message))
-                return BadRequest(new { error = "Tin nh?n không du?c d? tr?ng" });
-
             try
             {
+                if (string.IsNullOrWhiteSpace(request.Message))
+                {
+                    return BadRequest(new { success = false, message = "Message is required" });
+                }
+
+                _logger.LogInformation("=== Chat Request Start ===");
                 _logger.LogInformation("User message: {Message}", request.Message);
-                
-                var reply = await _geminiService.ChatAsync(request.Message);
+
+                // Detect role and userId
+                var isAdmin = User.IsInRole("Admin");
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                _logger.LogInformation("IsAdmin: {IsAdmin}, UserId: {UserId}", isAdmin, userId);
+
+                var result = await _geminiService.ChatAsync(request.Message, isAdmin, userId);
 
                 return Ok(new ChatResponseModel
                 {
-                    Reply = reply,
+                    Reply = result,
                     Success = true
                 });
             }
@@ -73,7 +50,7 @@ namespace WebApp.Controllers
                 _logger.LogError(ex, "Error in Chat: {Message}", ex.Message);
                 return Ok(new ChatResponseModel
                 {
-                    Reply = $"?? Xin l?i, dã x?y ra l?i: {ex.Message}",
+                    Reply = $"Xin loi, da xay ra loi: {ex.Message}",
                     Success = false
                 });
             }

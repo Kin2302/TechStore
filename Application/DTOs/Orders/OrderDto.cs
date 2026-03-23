@@ -21,7 +21,10 @@ namespace Application.DTOs.Orders {
         public string Email { get; set; } = "";
         public string ShippingAddress { get; set; } = "";
 
+        public decimal ShippingFee { get; set; } // NEW
         public decimal TotalAmount { get; set; }
+        public decimal SubTotalAmount => TotalAmount - ShippingFee; // NEW
+
         public string PaymentMethod { get; set; } = "";
         public string Status { get; set; }
 
@@ -59,6 +62,10 @@ namespace Application.DTOs.Orders {
             "Refunded" => "bg-secondary",
             _ => "bg-secondary"
         };
+
+        public string? ShippingProvider { get; set; }
+        public string? ShippingCode { get; set; }
+        public string? ShippingStatusRaw { get; set; }
     }
 
     public class OrderItemDto

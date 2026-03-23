@@ -1,18 +1,20 @@
+﻿@using Application.DTOs.Integration
 @model Application.DTOs.Orders.CheckoutDto
 
 @{
-    ViewData["Title"] = "Thanh to�n";
+    ViewData["Title"] = "Thanh toán";
     var cartItems = ViewBag.CartItems as List<Application.DTOs.Orders.CartItemDto>;
     var cartTotal = ViewBag.CartTotal as decimal? ?? 0;
+    var provinces = ViewBag.Provinces as IReadOnlyList<GHNProvinceDto> ?? Array.Empty<GHNProvinceDto>();
 }
 
 <div class="container py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa-solid fa-house"></i> Trang ch?</a></li>
-            <li class="breadcrumb-item"><a asp-controller="Cart" asp-action="Index" class="text-decoration-none">Gi? h�ng</a></li>
-            <li class="breadcrumb-item active">Thanh to�n</li>
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Cart" asp-action="Index" class="text-decoration-none">Giỏ hàng</a></li>
+            <li class="breadcrumb-item active">Thanh toán</li>
         </ol>
     </nav>
 
@@ -23,17 +25,17 @@
                 <span class="badge rounded-circle bg-success p-2 me-2" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
                     <i class="fa-solid fa-check"></i>
                 </span>
-                <span class="text-muted">Gi? h�ng</span>
+                <span class="text-muted">Giỏ hàng</span>
             </div>
             <div style="width:40px;height:2px;background:#198754;"></div>
             <div class="d-flex align-items-center">
                 <span class="badge rounded-circle bg-primary p-2 me-2" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">2</span>
-                <span class="fw-bold text-primary">Thanh to�n</span>
+                <span class="fw-bold text-primary">Thanh toán</span>
             </div>
             <div style="width:40px;height:2px;background:#dee2e6;"></div>
             <div class="d-flex align-items-center">
                 <span class="badge rounded-circle bg-secondary p-2 me-2" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">3</span>
-                <span class="text-muted">Ho�n t?t</span>
+                <span class="text-muted">Hoàn tất</span>
             </div>
         </div>
     </div>
@@ -46,7 +48,7 @@
         {
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fa-solid fa-circle-exclamation me-2"></i>
-                <strong>Vui l�ng ki?m tra l?i:</strong>
+                <strong>Vui lòng kiểm tra lỗi:</strong>
                 <ul class="mb-0 mt-2">
                     @foreach (var error in errors)
                     {
@@ -60,28 +62,28 @@
 
     <form asp-action="Checkout" method="post">
         <div class="row g-4">
-            <!-- C?t tr�i: Th�ng tin giao h�ng -->
+            <!-- Cột trái: Thông tin giao hàng -->
             <div class="col-lg-7">
-                <!-- Th�ng tin ngu?i nh?n -->
+                <!-- Thông tin người nhận -->
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white border-bottom">
-                        <h5 class="mb-0"><i class="fa-solid fa-user text-primary me-2"></i>Th�ng tin ngu?i nh?n</h5>
+                        <h5 class="mb-0"><i class="fa-solid fa-user text-primary me-2"></i>Thông tin người nhận</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label asp-for="FullName" class="form-label fw-semibold">
-                                    H? v� t�n <span class="text-danger">*</span>
+                                    Họ và tên <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                                    <input asp-for="FullName" class="form-control" placeholder="Nguy?n Van A" />
+                                    <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A" />
                                 </div>
                                 <span asp-validation-for="FullName" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="PhoneNumber" class="form-label fw-semibold">
-                                    S? di?n tho?i <span class="text-danger">*</span>
+                                    Số điện thoại <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
@@ -103,35 +105,63 @@
                     </div>
                 </div>
 
-                <!-- �?a ch? giao h�ng -->
+                <!-- Địa chỉ giao hàng -->
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white border-bottom">
-                        <h5 class="mb-0"><i class="fa-solid fa-location-dot text-danger me-2"></i>�?a ch? giao h�ng</h5>
+                        <h5 class="mb-0"><i class="fa-solid fa-location-dot text-danger me-2"></i>Địa chỉ giao hàng</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-3">
                             <label asp-for="ShippingAddress" class="form-label fw-semibold">
-                                �?a ch? chi ti?t <span class="text-danger">*</span>
+                                Địa chỉ chi tiết <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-map-pin"></i></span>
-                                <textarea asp-for="ShippingAddress" class="form-control" rows="2" placeholder="S? nh�, du?ng, phu?ng/x�, qu?n/huy?n, t?nh/th�nh ph?"></textarea>
+                                <textarea asp-for="ShippingAddress" class="form-control" rows="2" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
                             </div>
                             <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
                         </div>
                         <div>
                             <label asp-for="Note" class="form-label fw-semibold">
-                                Ghi ch� don h�ng
+                                Ghi chú đơn hàng
                             </label>
-                            <textarea asp-for="Note" class="form-control" rows="2" placeholder="V� d?: Giao h�ng gi? h�nh ch�nh, g?i tru?c khi giao..."></textarea>
+                            <textarea asp-for="Note" class="form-control" rows="2" placeholder="Ví dụ: Giao hàng giờ hành chính, gọi trước khi giao..."></textarea>
+                        </div>
+
+                        <!-- Dia chi giao hang -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Tỉnh/Thành</label>
+                                <select id="provinceSelect" class="form-select">
+                                    <option value="">-- Chọn Tỉnh/Thành --</option>
+                                    @foreach (var p in provinces)
+                                    {
+                                        <option value="@p.ProvinceId">@p.ProvinceName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Quận/Huyện</label>
+                                <select id="districtSelect" class="form-select" disabled>
+                                    <option value="">-- Chọn Quận/Huyện --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Phường/Xã</label>
+                                <select id="wardSelect" class="form-select" disabled>
+                                    <option value="">-- Chọn Phường/Xã --</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Phuong th?c thanh to�n -->
+                <!-- Phương thức thanh toán -->
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white border-bottom">
-                        <h5 class="mb-0"><i class="fa-solid fa-credit-card text-success me-2"></i>Phuong th?c thanh to�n</h5>
+                        <h5 class="mb-0"><i class="fa-solid fa-credit-card text-success me-2"></i>Phương thức thanh toán</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="form-check border rounded-3 p-3 mb-3 bg-light">
@@ -139,8 +169,8 @@
                             <label class="form-check-label w-100 d-flex align-items-center" for="paymentCOD">
                                 <i class="fa-solid fa-money-bill-wave fa-lg text-success me-3"></i>
                                 <div>
-                                    <strong>Thanh to�n khi nh?n h�ng (COD)</strong>
-                                    <br><small class="text-muted">Thanh to�n b?ng ti?n m?t khi nh?n h�ng</small>
+                                    <strong>Thanh toán khi nhận hàng (COD)</strong>
+                                    <br><small class="text-muted">Thanh toán bằng tiền mặt khi nhận hàng</small>
                                 </div>
                             </label>
                         </div>
@@ -150,8 +180,8 @@
                             <label class="form-check-label w-100 d-flex align-items-center" for="paymentMoMo">
                                 <i class="fa-solid fa-wallet fa-lg text-danger me-3"></i>
                                 <div>
-                                    <strong>V� MoMo</strong>
-                                    <br><small class="text-muted">Chuy?n sang MoMo d? thanh to�n online</small>
+                                    <strong>Ví MoMo</strong>
+                                    <br><small class="text-muted">Chuyển sang MoMo để thanh toán online</small>
                                 </div>
                             </label>
                         </div>
@@ -161,23 +191,28 @@
                             <label class="form-check-label w-100 d-flex align-items-center" for="paymentBank">
                                 <i class="fa-solid fa-building-columns fa-lg text-primary me-3"></i>
                                 <div>
-                                    <strong>Chuy?n kho?n ng�n h�ng</strong>
-                                    <br><small class="text-muted">Chuy?n kho?n qua t�i kho?n ng�n h�ng</small>
+                                    <strong>Chuyển khoản ngân hàng</strong>
+                                    <br><small class="text-muted">Chuyển khoản qua tài khoản ngân hàng</small>
                                 </div>
                             </label>
                         </div>
                     </div>
                 </div>
+
+                <input type="hidden" asp-for="ProvinceId" id="ProvinceId" />
+                <input type="hidden" asp-for="DistrictId" id="DistrictId" />
+                <input type="hidden" asp-for="WardCode" id="WardCode" />
+                <input type="hidden" asp-for="ShippingFee" id="ShippingFee" value="0" />
             </div>
 
-            <!-- C?t ph?i: T�m t?t don h�ng -->
+            <!-- Cột phải: Tóm tắt đơn hàng -->
             <div class="col-lg-5">
                 <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fa-solid fa-receipt me-2"></i>�on h�ng c?a b?n</h5>
+                        <h5 class="mb-0"><i class="fa-solid fa-receipt me-2"></i>Đơn hàng của bạn</h5>
                     </div>
                     <div class="card-body p-0">
-                        <!-- Danh s�ch s?n ph?m -->
+                        <!-- Danh sách sản phẩm -->
                         <div class="p-3" style="max-height: 350px; overflow-y: auto;">
                             @if (cartItems != null)
                             {
@@ -195,52 +230,52 @@
                                             <p class="mb-1 fw-semibold small text-truncate" style="max-width:200px;" title="@item.ProductName">
                                                 @item.ProductName
                                             </p>
-                                            <small class="text-muted">@item.Price.ToString("#,##0")? � @item.Quantity</small>
+                                            <small class="text-muted">@item.Price.ToString("#,##0")₫ × @item.Quantity</small>
                                         </div>
                                         <div class="text-end flex-shrink-0">
-                                            <span class="fw-bold text-danger">@item.Total.ToString("#,##0")?</span>
+                                            <span class="fw-bold text-danger">@item.Total.ToString("#,##0")₫</span>
                                         </div>
                                     </div>
                                 }
                             }
                         </div>
 
-                        <!-- T?ng ti?n -->
+                        <!-- Tổng tiền -->
                         <div class="p-3 bg-light border-top">
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">T?m t�nh:</span>
-                                <span>@cartTotal.ToString("#,##0")?</span>
+                                <span class="text-muted">Tạm tính:</span>
+                                <span>@cartTotal.ToString("#,##0")₫</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Ph� v?n chuy?n:</span>
-                                <span class="text-success fw-semibold">Mi?n ph�</span>
+                                <span class="text-muted">Phí vận chuyển:</span>
+                                <span id="shippingFeeText" class="text-success fw-semibold">0₫</span>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between">
-                                <strong class="fs-5">T?ng c?ng:</strong>
-                                <strong class="fs-4 text-danger">@cartTotal.ToString("#,##0")?</strong>
+                                <strong class="fs-5">Tổng cộng:</strong>
+                                <strong id="grandTotalText" class="fs-4 text-danger">@cartTotal.ToString("#,##0")₫</strong>
                             </div>
                         </div>
                     </div>
 
-                    <!-- N�t d?t h�ng -->
+                    <!-- Nút đặt hàng -->
                     <div class="card-footer bg-white p-3">
                         <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold">
-                            <i class="fa-solid fa-lock me-2"></i>�?T H�NG
+                            <i class="fa-solid fa-lock me-2"></i>ĐẶT HÀNG
                         </button>
                         <div class="text-center mt-2">
                             <small class="text-muted">
                                 <i class="fa-solid fa-shield-halved text-success"></i>
-                                Th�ng tin c?a b?n du?c b?o m?t
+                                Thông tin của bạn được bảo mật
                             </small>
                         </div>
                     </div>
                 </div>
 
-                <!-- Quay l?i gi? h�ng -->
+                <!-- Quay lại giỏ hàng -->
                 <div class="text-center mt-3">
                     <a asp-controller="Cart" asp-action="Index" class="text-decoration-none">
-                        <i class="fa-solid fa-arrow-left me-1"></i> Quay l?i gi? h�ng
+                        <i class="fa-solid fa-arrow-left me-1"></i> Quay lại giỏ hàng
                     </a>
                 </div>
             </div>
@@ -250,4 +285,110 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const provinceSelect = document.getElementById("provinceSelect");
+        const districtSelect = document.getElementById("districtSelect");
+        const wardSelect = document.getElementById("wardSelect");
+
+        const provinceIdInput = document.getElementById("ProvinceId");
+        const districtIdInput = document.getElementById("DistrictId");
+        const wardCodeInput = document.getElementById("WardCode");
+        const shippingFeeInput = document.getElementById("ShippingFee");
+
+        const shippingFeeText = document.getElementById("shippingFeeText");
+        const grandTotalText = document.getElementById("grandTotalText");
+
+        const cartTotal = @cartTotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        function formatVnd(value) {
+            return new Intl.NumberFormat("vi-VN").format(value) + "₫";
+        }
+
+        function updateTotals(fee) {
+            shippingFeeInput.value = fee;
+            shippingFeeText.textContent = formatVnd(fee);
+            grandTotalText.textContent = formatVnd(cartTotal + fee);
+        }
+
+        function resetSelect(select, placeholder) {
+            select.innerHTML = `<option value="">${placeholder}</option>`;
+            select.disabled = true;
+        }
+
+        async function loadDistricts(provinceId) {
+            resetSelect(districtSelect, "-- Chọn Quận/Huyện --");
+            resetSelect(wardSelect, "-- Chọn Phường/Xã --");
+            districtIdInput.value = 0;
+            wardCodeInput.value = "";
+            updateTotals(0);
+
+            if (!provinceId) return;
+
+            const response = await fetch(`/Order/GetDistricts?provinceId=${provinceId}`);
+            const data = await response.json();
+
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.id;
+                option.textContent = item.name;
+                districtSelect.appendChild(option);
+            });
+
+            districtSelect.disabled = false;
+        }
+
+        async function loadWards(districtId) {
+            resetSelect(wardSelect, "-- Chọn Phường/Xã --");
+            wardCodeInput.value = "";
+            updateTotals(0);
+
+            if (!districtId) return;
+
+            const response = await fetch(`/Order/GetWards?districtId=${districtId}`);
+            const data = await response.json();
+
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.code;
+                option.textContent = item.name;
+                wardSelect.appendChild(option);
+            });
+
+            wardSelect.disabled = false;
+        }
+
+        async function loadShippingFee() {
+            const districtId = districtIdInput.value;
+            const wardCode = wardCodeInput.value;
+
+            if (!districtId || !wardCode) {
+                updateTotals(0);
+                return;
+            }
+
+            const response = await fetch(`/Order/GetShippingFee?districtId=${districtId}&wardCode=${encodeURIComponent(wardCode)}`);
+            const data = await response.json();
+
+            if (data.success) {
+                updateTotals(data.fee);
+            } else {
+                updateTotals(0);
+            }
+        }
+
+        provinceSelect?.addEventListener("change", e => {
+            provinceIdInput.value = e.target.value || 0;
+            loadDistricts(e.target.value);
+        });
+
+        districtSelect?.addEventListener("change", e => {
+            districtIdInput.value = e.target.value || 0;
+            loadWards(e.target.value);
+        });
+
+        wardSelect?.addEventListener("change", async e => {
+            wardCodeInput.value = e.target.value || "";
+            await loadShippingFee();
+        });
+    </script>
 }

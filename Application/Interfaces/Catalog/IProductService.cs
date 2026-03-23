@@ -22,5 +22,6 @@ namespace Application.Interfaces.Catalog {
 
         Task<List<ProductDto>> SearchAsync(string? keyword, int? categoryId, decimal? minPrice, decimal? maxPrice, string? sortBy);
         Task<List<Category>> GetCategoriesAsync();
+        Task<int> GetProductStockAsync(int productId);
     }
 }
