@@ -1,6 +1,4 @@
-Here is the English version of your README, upgraded with a professional layout, badges, and a Mermaid architecture diagram that GitHub will render automatically.
 
------
 
 # 🛒 TechStore - Electronic Components E-Commerce
 
