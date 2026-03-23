@@ -1,4 +1,4 @@
-﻿@model List<WebApp.Models.CartItem>
+﻿@model List<Application.DTOs.Orders.CartItemDto>
 
 @{
     ViewData["Title"] = "Giỏ hàng";
@@ -112,7 +112,7 @@
                             <strong>Tổng cộng:</strong>
                             <strong class="text-danger fs-4" id="grandTotal">@total.ToString("#,##0")₫</strong>
                         </div>
-                        <a asp-controller="Checkout" asp-action="Index" class="btn btn-success btn-lg w-100">
+                        <a asp-controller="Order" asp-action="Checkout" class="btn btn-success btn-lg w-100">
                             <i class="fa-solid fa-credit-card"></i> Tiến hành đặt hàng
                         </a>
                     </div>

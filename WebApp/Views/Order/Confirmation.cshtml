@@ -1,0 +1,137 @@
+@model Application.DTOs.Orders.OrderDto
+
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+<div class="container py-5">
+    <!-- Progress Steps -->
+    <div class="d-flex justify-content-center mb-5">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center">
+                <span class="badge rounded-circle bg-success p-2 me-2" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-check"></i>
+                </span>
+                <span class="text-muted">Giỏ hàng</span>
+            </div>
+            <div style="width:40px;height:2px;background:#198754;"></div>
+            <div class="d-flex align-items-center">
+                <span class="badge rounded-circle bg-success p-2 me-2" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-check"></i>
+                </span>
+                <span class="text-muted">Thanh toán</span>
+            </div>
+            <div style="width:40px;height:2px;background:#198754;"></div>
+            <div class="d-flex align-items-center">
+                <span class="badge rounded-circle bg-success p-2 me-2" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-check"></i>
+                </span>
+                <span class="fw-bold text-success">Hoàn tất</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="text-center mb-5">
+        <div class="mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle" style="width:100px;height:100px;">
+                <i class="fa-solid fa-circle-check fa-3x text-success"></i>
+            </div>
+        </div>
+        <h2 class="fw-bold text-success">Đặt hàng thành công!</h2>
+        <p class="text-muted fs-5">Cảm ơn bạn đã mua hàng tại TechStore</p>
+        <span class="badge bg-primary fs-6 px-3 py-2">Mã đơn hàng: #@Model.Id</span>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Thông tin đơn hàng -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="fa-solid fa-truck text-primary me-2"></i>Thông tin giao hàng</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted" style="width:140px;"><i class="fa-solid fa-user me-2"></i>Người nhận:</td>
+                                <td class="fw-semibold">@Model.FullName</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="fa-solid fa-phone me-2"></i>Điện thoại:</td>
+                                <td class="fw-semibold">@Model.PhoneNumber</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="fa-solid fa-envelope me-2"></i>Email:</td>
+                                <td class="fw-semibold">@Model.Email</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="fa-solid fa-location-dot me-2"></i>Địa chỉ:</td>
+                                <td class="fw-semibold">@Model.ShippingAddress</td>
+                            </tr>
+                            @if (!string.IsNullOrEmpty(Model.Note))
+                            {
+                                <tr>
+                                    <td class="text-muted"><i class="fa-solid fa-note-sticky me-2"></i>Ghi chú:</td>
+                                    <td>@Model.Note</td>
+                                </tr>
+                            }
+                            <tr>
+                                <td class="text-muted"><i class="fa-solid fa-credit-card me-2"></i>Thanh toán:</td>
+                                <td><span class="badge bg-info">@Model.PaymentMethodDisplay</span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="fa-solid fa-clock me-2"></i>Trạng thái:</td>
+                                <td><span class="badge @Model.StatusBadgeClass">@Model.StatusDisplay</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chi tiết sản phẩm -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="fa-solid fa-box text-warning me-2"></i>Chi tiết sản phẩm</h5>
+                </div>
+                <div class="card-body p-0">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="d-flex gap-3 p-3 border-bottom align-items-center">
+                            <img src="@(item.ImageUrl ?? "https://via.placeholder.com/50")"
+                                 class="rounded border" style="width:50px;height:50px;object-fit:contain;">
+                            <div class="flex-grow-1">
+                                <p class="mb-0 fw-semibold small">@item.ProductName</p>
+                                <small class="text-muted">@item.Price.ToString("#,##0")₫ × @item.Quantity</small>
+                            </div>
+                            <span class="fw-bold text-danger">@item.Total.ToString("#,##0")₫</span>
+                        </div>
+                    }
+                    <div class="p-3 bg-light">
+                        <div class="d-flex justify-content-between">
+                            <strong class="fs-5">Tổng cộng:</strong>
+                            <strong class="fs-4 text-danger">@Model.TotalAmount.ToString("#,##0")₫</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-5">
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a asp-controller="Order" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-lg px-4">
+                <i class="fa-solid fa-eye me-2"></i>Xem chi tiết đơn hàng
+            </a>
+            <a asp-controller="Order" asp-action="MyOrders" class="btn btn-outline-secondary btn-lg px-4">
+                <i class="fa-solid fa-list me-2"></i>Đơn hàng của tôi
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg px-4">
+                <i class="fa-solid fa-house me-2"></i>Về trang chủ
+            </a>
+        </div>
+    </div>
+</div>

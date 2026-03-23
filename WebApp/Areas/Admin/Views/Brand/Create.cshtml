@@ -1,0 +1,59 @@
+﻿@model Application.DTOs.Catalog.BrandDto
+
+@{
+    ViewData["Title"] = "Thêm thương hiệu";
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3">
+        <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <h4 class="mb-0"><i class="fa-solid fa-building me-2"></i>Thêm thương hiệu mới</h4>
+</div>
+
+<div class="card shadow-sm border-0" style="max-width:580px;">
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label fw-semibold">Tên thương hiệu <span class="text-danger">*</span></label>
+                <input asp-for="Name" class="form-control" placeholder="VD: Arduino" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Origin" class="form-label fw-semibold">Xuất xứ</label>
+                <input asp-for="Origin" class="form-control" placeholder="VD: Italy, USA, China..." />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Logo thương hiệu</label>
+                <input type="file" name="logoFile" class="form-control" accept="image/*"
+                       onchange="previewLogo(this)" />
+                <div class="mt-2">
+                    <img id="logoPreview" src="#" alt="Preview"
+                         class="d-none rounded border" style="height:80px;object-fit:contain;">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>Lưu thương hiệu
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        function previewLogo(input) {
+            const img = document.getElementById('logoPreview');
+            if (input.files && input.files[0]) {
+                img.src = URL.createObjectURL(input.files[0]);
+                img.classList.remove('d-none');
+            }
+        }
+    </script>
+}

@@ -1,0 +1,104 @@
+﻿@model IEnumerable<Application.DTOs.Catalog.CategoryDto>
+
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1"><i class="fa-solid fa-folder-tree me-2"></i>Quản lý danh mục</h4>
+        <small class="text-muted">Tổng cộng <strong>@Model.Count()</strong> danh mục</small>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i>Thêm danh mục
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fa-solid fa-circle-check me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm border-0">
+    @if (!Model.Any())
+    {
+        <div class="card-body text-center py-5">
+            <i class="fa-solid fa-folder-open fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Chưa có danh mục nào</h5>
+            <a asp-action="Create" class="btn btn-primary mt-2">
+                <i class="fa-solid fa-plus me-1"></i>Thêm danh mục mới
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Tên danh mục</th>
+                        <th>Slug</th>
+                        <th>Mô tả</th>
+                        <th>Danh mục cha</th>
+                        <th class="text-center" style="width:120px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var allCategories = Model.ToDictionary(c => c.Id, c => c.Name);
+                        int index = 1;
+                    }
+                    @foreach (var category in Model)
+                    {
+                        <tr>
+                            <td class="text-muted">@(index++)</td>
+                            <td>
+                                <span class="fw-semibold">
+                                    @if (!string.IsNullOrEmpty(category.IconUrl))
+                                    {
+                                        <i class="@category.IconUrl me-1 text-primary"></i>
+                                    }
+                                    @category.Name
+                                </span>
+                            </td>
+                            <td><code>@category.Slug</code></td>
+                            <td>
+                                <span class="text-muted text-truncate d-inline-block" style="max-width:200px;">
+                                    @(category.Description ?? "—")
+                                </span>
+                            </td>
+                            <td>
+                                @if (category.ParentId.HasValue && allCategories.TryGetValue(category.ParentId.Value, out var parentName))
+                                {
+                                    <span class="badge bg-secondary">@parentName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Edit" asp-route-id="@category.Id"
+                                       class="btn btn-outline-primary" title="Sửa">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@category.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Xóa danh mục này?')">
+                                        <button type="submit" class="btn btn-outline-danger" title="Xóa">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

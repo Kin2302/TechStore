@@ -1,53 +1,56 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebApp.Models;
-using Microsoft.EntityFrameworkCore;
-using TechStore.Infrastructure.Data;
+using Application.DTOs.Admin;
+using Application.DTOs.Catalog;
+using Application.DTOs.Integration;
+using Application.DTOs.Orders;
+using Application.Interfaces.Admin;
+using Application.Interfaces.Catalog;
+using Application.Interfaces.Integration;
+using Application.Interfaces.Orders;
+
 namespace WebApp.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _context; 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        private readonly IProductService _productService;
+
+        public HomeController(ILogger<HomeController> logger, IProductService productService)
         {
             _logger = logger;
-            _context = context;
+            _productService = productService;
         }
 
         public async Task<IActionResult> Index()
         {
-            // Lấy danh sách sản phẩm từ SQL
-            // Include(p => p.Images): Lấy kèm luôn bảng Ảnh để hiển thị
-            // Include(p => p.Category): Lấy kèm tên Danh mục
-            var products = await _context.Products
-                                         .Include(p => p.Images)
-                                         .Include(p => p.Category)
-                                         .Take(12) // Lấy tạm 12 cái mới nhất demo
-                                         .ToListAsync();
-
-            // Truyền dữ liệu sang View
+            var products = await _productService.GetFeaturedAsync(12);
             return View(products);
         }
 
-
         public async Task<IActionResult> Detail(int id)
         {
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Brand)              // Kèm thông tin hãng
-                .Include(p => p.Images)             // Kèm danh sách ảnh
-                .Include(p => p.Specifications)     // Kèm bảng thông số kỹ thuật (Quan trọng!)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (product == null)
-            {
-                return NotFound(); // Trả về lỗi 404 nếu ko tìm thấy
-            }
-
+            var product = await _productService.GetByIdAsync(id);
+            if (product == null) return NotFound();
             return View(product);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Search(string? q, int? categoryId, decimal? minPrice, decimal? maxPrice, string? sortBy = "name")
+        {
+            var products = await _productService.SearchAsync(q, categoryId, minPrice, maxPrice, sortBy);
+            var categories = await _productService.GetCategoriesAsync();
+
+            ViewBag.Keyword = q;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+            ViewBag.SortBy = sortBy;
+            ViewBag.Categories = categories;
+
+            return View(products);
+        }
 
         public IActionResult Privacy()
         {

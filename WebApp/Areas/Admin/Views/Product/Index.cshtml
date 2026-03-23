@@ -1,0 +1,153 @@
+﻿@model IEnumerable<Application.DTOs.Catalog.ProductDto>
+
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<TechStore.Domain.Entities.Category> ?? Enumerable.Empty<TechStore.Domain.Entities.Category>();
+    var currentSearch = ViewBag.Search as string;
+    var currentCategoryId = ViewBag.CategoryId as int?;
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1"><i class="fa-solid fa-tags me-2"></i>Quản lý sản phẩm</h4>
+        <small class="text-muted">Tổng cộng <strong>@Model.Count()</strong> sản phẩm</small>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i>Thêm sản phẩm
+    </a>
+</div>
+
+<!-- Notifications -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-check me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filter & Search -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body py-3">
+        <form asp-action="Index" method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold">Tìm kiếm</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="fa-solid fa-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Tên hoặc mã sản phẩm..."
+                           value="@currentSearch">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Danh mục</label>
+                <select name="categoryId" class="form-select form-select-sm">
+                    <option value="">-- Tất cả danh mục --</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat.Id" selected="@(currentCategoryId == cat.Id)">@cat.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
+                    <i class="fa-solid fa-filter me-1"></i>Lọc
+                </button>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary flex-grow-1">
+                    <i class="fa-solid fa-rotate-left me-1"></i>Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Products Table -->
+@if (!Model.Any())
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-body text-center py-5">
+            <i class="fa-solid fa-box-open fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Không tìm thấy sản phẩm nào</h5>
+            <a asp-action="Create" class="btn btn-primary mt-2">
+                <i class="fa-solid fa-plus me-1"></i>Thêm sản phẩm mới
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">Ảnh</th>
+                        <th>Sản phẩm</th>
+                        <th>Mã SKU</th>
+                        <th>Danh mục</th>
+                        <th>Thương hiệu</th>
+                        <th class="text-end">Giá</th>
+                        <th class="text-center">Tồn kho</th>
+                        <th class="text-center" style="width:120px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@(product.ImageUrl ?? "https://via.placeholder.com/44")"
+                                     class="rounded border" style="width:44px;height:44px;object-fit:contain;">
+                            </td>
+                            <td>
+                                <span class="fw-semibold">@product.Name</span>
+                                @if (!string.IsNullOrEmpty(product.ShortDescription))
+                                {
+                                    <br><small class="text-muted text-truncate d-inline-block" style="max-width:250px;">@product.ShortDescription</small>
+                                }
+                            </td>
+                            <td><code>@product.Code</code></td>
+                            <td><span class="badge bg-secondary">@product.CategoryName</span></td>
+                            <td>@(product.BrandName ?? "—")</td>
+                            <td class="text-end">
+                                <span class="fw-bold text-danger">@product.Price.ToString("#,##0")₫</span>
+                            </td>
+                            <td class="text-center">
+                                @if (product.Stock <= 0)
+                                {
+                                    <span class="badge bg-danger">Hết hàng</span>
+                                }
+                                else if (product.Stock <= 5)
+                                {
+                                    <span class="badge bg-warning text-dark">@product.Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">@product.Stock</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Edit" asp-route-id="@product.Id"
+                                       class="btn btn-outline-primary" title="Sửa">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <a asp-area="" asp-controller="Home" asp-action="Detail" asp-route-id="@product.Id"
+                                       class="btn btn-outline-info" title="Xem" target="_blank">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@product.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
+                                        <button type="submit" class="btn btn-outline-danger" title="Xóa">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

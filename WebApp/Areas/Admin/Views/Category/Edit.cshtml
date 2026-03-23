@@ -1,0 +1,65 @@
+@model Application.DTOs.Catalog.CategoryDto
+
+@{
+    ViewData["Title"] = "S?a danh m?c";
+    var parents = ViewBag.ParentCategories as IEnumerable<Application.DTOs.Catalog.CategoryDto>
+        ?? Enumerable.Empty<Application.DTOs.Catalog.CategoryDto>();
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3">
+        <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <h4 class="mb-0"><i class="fa-solid fa-pen me-2"></i>S?a danh m?c</h4>
+</div>
+
+<div class="card shadow-sm border-0" style="max-width:680px;">
+    <div class="card-body p-4">
+        <form asp-action="Edit" method="post">
+            <input asp-for="Id" type="hidden" />
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label fw-semibold">Tên danh m?c <span class="text-danger">*</span></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Slug" class="form-label fw-semibold">Slug</label>
+                <input asp-for="Slug" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label fw-semibold">Mô t?</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="IconUrl" class="form-label fw-semibold">Icon (Font Awesome class)</label>
+                <input asp-for="IconUrl" class="form-control" placeholder="VD: fa-solid fa-microchip" />
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="ParentId" class="form-label fw-semibold">Danh m?c cha</label>
+                <select asp-for="ParentId" class="form-select">
+                    <option value="">-- Không có (danh m?c g?c) --</option>
+                    @foreach (var p in parents)
+                    {
+                        <option value="@p.Id" selected="@(Model.ParentId == p.Id)">@p.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>Luu thay d?i
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">H?y</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
