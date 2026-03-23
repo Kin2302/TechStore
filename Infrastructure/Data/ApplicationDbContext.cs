@@ -26,6 +26,22 @@ namespace TechStore.Infrastructure.Data
         {
             base.OnModelCreating(builder);
 
+            // Seed default roles so they appear in database migrations
+            builder.Entity<Microsoft.AspNetCore.Identity.IdentityRole>().HasData(
+                new Microsoft.AspNetCore.Identity.IdentityRole
+                {
+                    Id = "f1a5c9a8-0001-4b2b-9f1a-000000000001",
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
+                },
+                new Microsoft.AspNetCore.Identity.IdentityRole
+                {
+                    Id = "f1a5c9a8-0002-4b2b-9f1a-000000000002",
+                    Name = "User",
+                    NormalizedName = "USER"
+                }
+            );
+
             // 1. Cấu hình đệ quy cho Category (Cha - Con)
             builder.Entity<Category>()
                 .HasOne(c => c.Parent)

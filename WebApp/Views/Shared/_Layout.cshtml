@@ -1,4 +1,6 @@
 @using Microsoft.AspNetCore.Identity
+@using Application.Interfaces.Orders
+@inject ICartService CartService
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
@@ -49,10 +51,19 @@
                         </li>
 
                         <li class="nav-item mx-2">
+                            <a class="nav-link position-relative btn border-0 text-white tech-cart-link" asp-controller="Wishlist" asp-action="Index" title="Yêu thích">
+                                <i class="fa-regular fa-heart fa-lg"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="wishlistCount">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item mx-2">
                             <a class="nav-link position-relative btn border-0 text-white tech-cart-link" asp-controller="Cart" asp-action="Index">
                                 <i class="fa-solid fa-cart-shopping fa-lg"></i>
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">
-                                    0
+                                    @(CartService.GetCartCount())
                                 </span>
                             </a>
                         </li>
@@ -109,11 +120,39 @@
         </nav>
     </header>
 
-    <div class="container-fluid layout-main">
-        <main role="main" class="pb-3 pt-3">
-            @RenderBody()
-        </main>
-    </div>
+    @{ 
+        var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+        var action = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+        // hide category sidebar on Wishlist, Cart, Search and Compare pages to avoid duplicate sidebars
+        var hideSidebar = string.Equals(controller, "Wishlist", System.StringComparison.OrdinalIgnoreCase)
+                          || string.Equals(controller, "Cart", System.StringComparison.OrdinalIgnoreCase)
+                          || string.Equals(controller, "Compare", System.StringComparison.OrdinalIgnoreCase)
+                          || (string.Equals(controller, "Home", System.StringComparison.OrdinalIgnoreCase)
+                              && string.Equals(action, "Search", System.StringComparison.OrdinalIgnoreCase));
+    }
+
+    @if (hideSidebar)
+    {
+        <div class="container-fluid layout-main">
+            <main role="main" class="pb-3 pt-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
+    else
+    {
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-3 d-none d-lg-block">
+                    @{ var cats = ViewBag.Categories as IEnumerable<TechStore.Domain.Entities.Category> ?? Enumerable.Empty<TechStore.Domain.Entities.Category>(); }
+                    @{ await Html.RenderPartialAsync("_CategorySidebar", cats); }
+                </div>
+                <div class="col-lg-9">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    }
 
     <footer class="tech-footer text-white text-center py-3 mt-auto">
         <div class="container">
@@ -182,6 +221,108 @@
         }
 
         loadCompareCount();
+        
+        function loadWishlistCount() {
+            fetch('/Wishlist/GetCount')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('wishlistCount');
+                    if (el) el.textContent = data.count ?? 0;
+                });
+        }
+
+        loadWishlistCount();
+
+        function loadCartCount() {
+            // try to get count from server endpoint first
+            fetch('/Cart/GetCartCount')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('cartCount');
+                    if (el) el.textContent = data.count ?? 0;
+                })
+                .catch(() => {
+                    // fallback: render server-side count injected into layout
+                    try {
+                        const serverCount = parseInt('@(CartService.GetCartCount())');
+                        const el = document.getElementById('cartCount');
+                        if (el) el.textContent = isNaN(serverCount) ? 0 : serverCount;
+                    } catch (e) { }
+                });
+        }
+
+        loadCartCount();
+
+        async function toggleWishlist(productId, add) {
+            const url = add ? '/Wishlist/Add' : '/Wishlist/Remove';
+            const form = new FormData();
+            form.append('productId', productId);
+
+            const res = await fetch(url, { method: 'POST', body: form, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            try {
+                const data = await res.json();
+                const el = document.getElementById('wishlistCount');
+                if (el) el.textContent = data.count ?? data.count ?? 0;
+            } catch { }
+        }
+
+        // Sync wishlist buttons (heart icons) with server session
+        async function syncWishlistButtons() {
+            try {
+                const res = await fetch('/Wishlist/GetIds');
+                const ids = await res.json();
+                if (!Array.isArray(ids)) return;
+
+                document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                    const pid = parseInt(btn.getAttribute('data-product-id'));
+                    const icon = btn.querySelector('i');
+                    if (!icon) return;
+                    if (ids.includes(pid)) {
+                        icon.classList.remove('fa-regular');
+                        icon.classList.add('fa-solid', 'text-danger');
+                    } else {
+                        icon.classList.remove('fa-solid', 'text-danger');
+                        icon.classList.add('fa-regular');
+                    }
+                });
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        // run after DOM ready and keep handlers delegated so they work for dynamic content
+        $(function () {
+            syncWishlistButtons();
+
+            // Delegated click handler for wishlist buttons
+            $(document).on('click', '.wishlist-btn', async function (e) {
+                e.preventDefault();
+                var btn = $(this);
+                var productId = btn.data('product-id');
+
+                try {
+                    const form = new URLSearchParams();
+                    form.append('productId', productId);
+
+                    const res = await fetch('/Wishlist/Add', {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        body: form
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        $('#wishlistCount').text(data.count);
+                        var icon = btn.find('i');
+                        icon.removeClass('fa-regular').addClass('fa-solid text-danger');
+                    } else {
+                        alert(data.message || 'Không thể thêm vào yêu thích.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Không thể kết nối tới server.');
+                }
+            });
+        });
 
         function toggleChat() {
             var chatWindow = document.getElementById("chatWindow");

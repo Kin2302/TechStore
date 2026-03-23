@@ -1,11 +1,11 @@
-@model Application.DTOs.Admin.DashboardDto
+﻿@model Application.DTOs.Admin.DashboardDto
 
 @{
     ViewData["Title"] = "Dashboard";
 }
 
 <h1>Admin Dashboard</h1>
-<p>N?u th?y trang n�y = Area ho?t d?ng!</p>
+<p>Nếu thấy trang này = Area hoạt động!</p>
 
 <!-- Stat Cards -->
 <div class="row g-3 mb-4">
@@ -17,7 +17,7 @@
                 </div>
                 <div>
                     <h3 class="mb-0 fw-bold">@Model.TotalOrders</h3>
-                    <small class="text-muted">T?ng don h�ng</small>
+                    <small class="text-muted">Tổng đơn hàng</small>
                 </div>
             </div>
         </div>
@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     <h3 class="mb-0 fw-bold">@Model.PendingOrders</h3>
-                    <small class="text-muted">Ch? x? l�</small>
+                    <small class="text-muted">Chờ xử lý</small>
                 </div>
             </div>
         </div>
@@ -56,7 +56,7 @@
                 </div>
                 <div>
                     <h3 class="mb-0 fw-bold">@Model.TotalProducts</h3>
-                    <small class="text-muted">S?n ph?m</small>
+                    <small class="text-muted">Sản phẩm</small>
                 </div>
             </div>
         </div>
@@ -69,28 +69,28 @@
         <div class="card shadow-sm border-0">
             <div class="card-body py-3">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h6 class="mb-0"><i class="fa-solid fa-chart-pie me-2"></i>Ph�n b? tr?ng th�i</h6>
+                    <h6 class="mb-0"><i class="fa-solid fa-chart-pie me-2"></i>Phân bố trạng thái</h6>
                     <div class="d-flex gap-3 flex-wrap">
                         <a asp-controller="Order" asp-action="Index" asp-route-status="Pending" class="text-decoration-none">
                             <span class="badge bg-warning text-dark px-3 py-2">
-                                <i class="fa-solid fa-clock me-1"></i>Ch? x�c nh?n: @Model.PendingOrders
+                                <i class="fa-solid fa-clock me-1"></i>Chờ xác nhận: @Model.PendingOrders
                             </span>
                         </a>
                         <a asp-controller="Order" asp-action="Index" asp-route-status="Confirmed" class="text-decoration-none">
                             <span class="badge bg-info px-3 py-2">
-                                <i class="fa-solid fa-circle-check me-1"></i>�� x�c nh?n: @Model.ConfirmedOrders
+                                <i class="fa-solid fa-circle-check me-1"></i>Ðã xác nhận: @Model.ConfirmedOrders
                             </span>
                         </a>
                         <a asp-controller="Order" asp-action="Index" asp-route-status="Shipping" class="text-decoration-none">
                             <span class="badge bg-primary px-3 py-2">
-                                <i class="fa-solid fa-truck me-1"></i>�ang giao: @Model.ShippingOrders
+                                <i class="fa-solid fa-truck me-1"></i>Ðang giao: @Model.ShippingOrders
                             </span>
                         </a>
                         <span class="badge bg-success px-3 py-2">
-                            <i class="fa-solid fa-flag-checkered me-1"></i>Ho�n th�nh: @Model.CompletedOrders
+                            <i class="fa-solid fa-flag-checkered me-1"></i>Hoàn thành: @Model.CompletedOrders
                         </span>
                         <span class="badge bg-danger px-3 py-2">
-                            <i class="fa-solid fa-ban me-1"></i>�� h?y: @Model.CancelledOrders
+                            <i class="fa-solid fa-ban me-1"></i>Ðã hủy: @Model.CancelledOrders
                         </span>
                     </div>
                 </div>
@@ -109,7 +109,7 @@
                 </div>
                 <div>
                     <h5 class="mb-0 fw-bold">@Model.TodayRevenue.ToString("#,##0")?</h5>
-                    <small class="text-muted">Doanh thu h�m nay</small>
+                    <small class="text-muted">Doanh thu hôm nay</small>
                 </div>
             </div>
         </div>
@@ -122,7 +122,7 @@
                 </div>
                 <div>
                     <h5 class="mb-0 fw-bold">@Model.LowStockProducts</h5>
-                    <small class="text-muted">S?n ph?m s?p h?t h�ng (= 5)</small>
+                    <small class="text-muted">Sản phẩm sắp hết hàng (= 5)</small>
                 </div>
             </div>
         </div>
@@ -130,13 +130,13 @@
 </div>
 
 <div class="row g-4">
-    <!-- �on h�ng g?n d�y -->
+    <!-- Ðon hàng g?n dây -->
     <div class="col-lg-7">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>�on h�ng g?n d�y</h6>
+                <h6 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Ðơn hàng gần đây</h6>
                 <a asp-controller="Order" asp-action="Index" class="btn btn-sm btn-outline-primary">
-                    Xem t?t c? <i class="fa-solid fa-arrow-right ms-1"></i>
+                    Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i>
                 </a>
             </div>
             <div class="card-body p-0">
@@ -145,11 +145,11 @@
                     <table class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>M� don</th>
-                                <th>Kh�ch h�ng</th>
-                                <th class="text-end">T?ng ti?n</th>
-                                <th>Tr?ng th�i</th>
-                                <th>Ng�y</th>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th class="text-end">Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -181,18 +181,18 @@
                 {
                     <div class="text-center py-4 text-muted">
                         <i class="fa-solid fa-inbox fa-2x mb-2"></i>
-                        <p class="mb-0">Chua c� don h�ng n�o</p>
+                        <p class="mb-0">Chưa có đơn hàng nào</p>
                     </div>
                 }
             </div>
         </div>
     </div>
 
-    <!-- SP b�n ch?y -->
+    <!-- SP bán ch?y -->
     <div class="col-lg-5">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white">
-                <h6 class="mb-0"><i class="fa-solid fa-fire text-danger me-2"></i>S?n ph?m b�n ch?y</h6>
+                <h6 class="mb-0"><i class="fa-solid fa-fire text-danger me-2"></i>Sản phẩm bán chạy</h6>
             </div>
             <div class="card-body p-0">
                 @if (Model.TopProducts.Any())
@@ -226,7 +226,7 @@
                 {
                     <div class="text-center py-4 text-muted">
                         <i class="fa-solid fa-chart-bar fa-2x mb-2"></i>
-                        <p class="mb-0">Chua c� d? li?u b�n h�ng</p>
+                        <p class="mb-0">Chưa có dữ liệu bán hàng</p>
                     </div>
                 }
             </div>

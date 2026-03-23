@@ -1,0 +1,47 @@
+﻿@model IEnumerable<TechStore.Domain.Entities.Category>
+
+@{
+    // detect current category from query string or route
+    var catQuery = Context.Request.Query["categoryId"].ToString();
+    int.TryParse(catQuery, out var currentCategoryId);
+}
+
+<div class="card shadow-sm border-0 category-sidebar mb-3">
+    <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+        <strong class="mb-0">DANH MỤC SẢN PHẨM</strong>
+        <button class="btn btn-outline-light btn-sm d-md-none" id="catToggle" aria-label="Toggle categories">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+
+    <div class="card-body p-0">
+        <ul class="list-group list-group-flush category-list p-2 mb-0">
+            @if (Model != null)
+            {
+                foreach (var c in Model)
+                {
+                    var isActive = c.Id == currentCategoryId;
+                    <li class="list-group-item border-0 px-0 py-2">
+                        <a class="d-flex align-items-center text-decoration-none category-link @(isActive ? "active text-white bg-primary rounded" : "text-dark")"
+                           href="@Url.Action("Search", "Home", new { categoryId = c.Id })">
+                            <i class="fa-solid fa-caret-right me-2 @(isActive ? "text-white" : "text-muted") small"></i>
+                            <span class="flex-grow-1">@c.Name</span>
+                        </a>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const toggle = document.getElementById('catToggle');
+        if (!toggle) return;
+        toggle.addEventListener('click', function () {
+            const card = this.closest('.category-sidebar');
+            if (!card) return;
+            card.classList.toggle('collapsed');
+        });
+    })();
+</script>

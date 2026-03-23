@@ -59,10 +59,7 @@
                         <td class="fw-semibold">Mã SP</td>
                         @foreach (var p in Model) { <td>@p.Code</td> }
                     </tr>
-                    <tr>
-                        <td class="fw-semibold">Danh mục</td>
-                        @foreach (var p in Model) { <td>@(p.CategoryName ?? "-")</td> }
-                    </tr>
+                    @* Danh mục removed by request *@
                     <tr>
                         <td class="fw-semibold">Thương hiệu</td>
                         @foreach (var p in Model) { <td>@(p.BrandName ?? "-")</td> }
