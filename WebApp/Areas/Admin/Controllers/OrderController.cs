@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using TechStore.Domain.Enums;
@@ -66,12 +66,29 @@ namespace WebApp.Areas.Admin.Controllers
             var result = await _adminOrderService.UpdateOrderStatusAsync(id, parsedStatus);
             if (!result)
             {
-                TempData["Error"] = "Kh�ng th? c?p nh?t tr?ng th�i don h�ng.";
+                TempData["Error"] = "Không th? c?p nh?t tr?ng thái don hàng.";
             }
             else
             {
-                TempData["Success"] = "C?p nh?t tr?ng th�i th�nh c�ng!";
+                TempData["Success"] = "C?p nh?t tr?ng thái thành công!";
             }
+            return RedirectToAction("Details", new { id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SyncShippingStatus(int id)
+        {
+            var ok = await _adminOrderService.SyncShippingStatusFromGhnAsync(id);
+
+            if (ok)
+            {
+                TempData["Success"] = "Đồng bộ trạng thái GHN thành công.";
+            }
+            else
+            {
+                TempData["Error"] = "Không thể đồng bộ trạng thái GHN.";
+            }
+
             return RedirectToAction("Details", new { id });
         }
     }

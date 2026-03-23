@@ -32,6 +32,7 @@ body {
     margin-bottom: 60px;
     background: radial-gradient(circle at top right, #eef3ff, #f8faff 42%, #f4f7ff 100%);
     color: var(--ts-text);
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
 }
 
 .btn:focus,

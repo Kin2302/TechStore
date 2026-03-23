@@ -3,17 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using TechStore.Infrastructure.Data;
 using TechStore.Infrastructure.Services;
 using TechStore.Infrastructure.Plugins;
-using Microsoft.SemanticKernel;
 using Infrastructure.Services;
 using Application.Interfaces.Catalog;
 using Application.Interfaces.Orders;
 using Application.Interfaces.Admin;
 using Infrastructure.Services.Admin;
-using Application.DTOs.Integration;
 using Application.Interfaces.Integration;
-using Application.DTOs.Admin;
-using Application.DTOs.Catalog;
-using Application.DTOs.Orders;
+using Application.DTOs.Integration;
+using TechStore.Infrastructure.Services.Admin;
+using TechStore.Infrastructure.Services.Integration;
 
 namespace WebApp
 {
@@ -30,21 +28,19 @@ namespace WebApp
                 options.UseSqlServer(connectionString,
                     b => b.MigrationsAssembly("TechStore.Infrastructure")));
 
-            // ✅ KÍCH HOẠT IDENTITY + ROLES
             builder.Services.AddDefaultIdentity<IdentityUser>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = false; 
+                options.SignIn.RequireConfirmedAccount = false;
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false; 
+                options.Password.RequireNonAlphanumeric = false;
             })
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultUI();
 
-            .AddRoles<IdentityRole>() // 
-            .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.AddRazorPages(); // 
+            builder.Services.AddRazorPages();
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -53,12 +49,10 @@ namespace WebApp
                 options.Cookie.IsEssential = true;
             });
 
-            // ✅ ĐĂNG KÝ SERVICES (Clean Architecture)
+            // === SERVICES (Clean Architecture) ===
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<ICartService, CartService>();
-            builder.Services.AddScoped<ProductPlugin>();
-            builder.Services.AddScoped<CartPlugin>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
@@ -67,65 +61,31 @@ namespace WebApp
             builder.Services.AddScoped<IAdminCategoryService, AdminCategoryService>();
             builder.Services.AddScoped<IAdminBrandService, AdminBrandService>();
             builder.Services.AddScoped<ICompareService, CompareService>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             // MoMo
             builder.Services.Configure<MoMoOptions>(builder.Configuration.GetSection("MoMo"));
             builder.Services.AddHttpClient<IMoMoService, MoMoService>();
 
-            builder.Services.AddScoped<Kernel>(sp =>
-            {
-                var config = sp.GetRequiredService<IConfiguration>();
-                var apiKey = config["Gemini:ApiKey"];
+            // GHN
+            builder.Services.Configure<GHNOptions>(builder.Configuration.GetSection("GHN"));
+            builder.Services.AddHttpClient<IGHNService, GHNService>();
 
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    throw new InvalidOperationException("Gemini API Key not found in configuration!");
-                }
+            // === AI PLUGINS ===
+            builder.Services.AddScoped<ProductPlugin>();
+            builder.Services.AddScoped<CartPlugin>();
+            builder.Services.AddScoped<OrderPlugin>();
+            builder.Services.AddScoped<StoreInfoPlugin>();
+            builder.Services.AddScoped<AdminReportPlugin>();
+            builder.Services.AddScoped<AdminProductPlugin>();
+            builder.Services.AddScoped<AdminOrderPlugin>();
 
-                var kernelBuilder = Kernel.CreateBuilder();
-                
-                // Add Gemini với model stable
-                kernelBuilder.AddGoogleAIGeminiChatCompletion(
-                    modelId: "gemini-2.5-flash",
-                    apiKey: apiKey
-                );
-
-                // ✅ Add Plugins
-                var productPlugin = sp.GetRequiredService<ProductPlugin>();
-                var cartPlugin = sp.GetRequiredService<CartPlugin>();
-                
-                kernelBuilder.Plugins.AddFromObject(productPlugin, "ProductTools");
-                kernelBuilder.Plugins.AddFromObject(cartPlugin, "CartTools");
-
-                return kernelBuilder.Build();
-            });
-
-            // ✅ GeminiService sử dụng Kernel đã tạo
+            // === KERNEL FACTORY + GEMINI SERVICE ===
+            builder.Services.AddScoped<IKernelFactory, KernelFactory>();
             builder.Services.AddScoped<IGeminiService, GeminiService>();
 
             var app = builder.Build();
 
-            // ✅ SEED DATA (Bỏ comment)
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    var context = services.GetRequiredService<ApplicationDbContext>();
-                    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-                    // Gọi hàm tạo dữ liệu mẫu
-                    await DbInitializer.InitializeAsync(context, userManager, roleManager);
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "Đã xảy ra lỗi khi khởi tạo dữ liệu (Seeding Data).");
-                }
-            }
-
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -135,12 +95,12 @@ namespace WebApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting(); // ✅ THÊM DÒNG NÀY
+            app.UseRouting();
 
             app.UseAuthentication();
-            app.UseAuthorization();  // ✅ THÊM: Phân quyền
+            app.UseAuthorization();
 
-            app.UseSession(); // ✅ CHỈ 1 LẦN, SAU Authorization
+            app.UseSession();
 
             app.MapControllerRoute(
                 name: "areas",
@@ -151,7 +111,7 @@ namespace WebApp
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            app.MapRazorPages(); // ✅ THÊM: Map Identity Pages (/Identity/Account/Login...)
+            app.MapRazorPages();
 
             await app.RunAsync();
         }

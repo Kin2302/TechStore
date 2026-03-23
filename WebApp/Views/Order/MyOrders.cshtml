@@ -1,14 +1,14 @@
 @model List<Application.DTOs.Orders.OrderDto>
 
 @{
-    ViewData["Title"] = "�on h�ng c?a t�i";
+    ViewData["Title"] = "Đơn hàng của tôi";
 }
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fa-solid fa-box text-primary me-2"></i>�on h�ng c?a t�i</h2>
+        <h2><i class="fa-solid fa-box text-primary me-2"></i>Đơn hàng của tôi</h2>
         <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
-            <i class="fa-solid fa-arrow-left me-1"></i> Ti?p t?c mua s?m
+            <i class="fa-solid fa-arrow-left me-1"></i> Tiếp tục mua sắm
         </a>
     </div>
 
@@ -36,10 +36,10 @@
                     <i class="fa-solid fa-box-open fa-3x text-muted"></i>
                 </div>
             </div>
-            <h4 class="text-muted">B?n chua c� don h�ng n�o</h4>
-            <p class="text-muted">H�y kh�m ph� c�c s?n ph?m tuy?t v?i c?a ch�ng t�i!</p>
+            <h4 class="text-muted">Bạn chưa có đơn hàng nào</h4>
+            <p class="text-muted">Hãy khám phá các sản phẩm tuyệt vời của chúng tôi!</p>
             <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
-                <i class="fa-solid fa-shopping-bag me-2"></i>Mua s?m ngay
+                <i class="fa-solid fa-shopping-bag me-2"></i>Mua sắm ngay
             </a>
         </div>
     }
@@ -51,13 +51,13 @@
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>M� don</th>
-                            <th>Ng�y d?t</th>
-                            <th>S?n ph?m</th>
-                            <th>T?ng ti?n</th>
-                            <th>Thanh to�n</th>
-                            <th>Tr?ng th�i</th>
-                            <th class="text-center">Thao t�c</th>
+                            <th>Mã đơn</th>
+                            <th>Ngày đặt</th>
+                            <th>Sản phẩm</th>
+                            <th>Tổng tiền</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,14 +86,14 @@
                                                 <small class="fw-semibold text-truncate d-block" style="max-width:180px;">@firstItem.ProductName</small>
                                                 @if (order.Items.Count > 1)
                                                 {
-                                                    <small class="text-muted">v� @(order.Items.Count - 1) s?n ph?m kh�c</small>
+                                                    <small class="text-muted">và @(order.Items.Count - 1) sản phẩm khác</small>
                                                 }
                                             </div>
                                         }
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="fw-bold text-danger">@order.TotalAmount.ToString("#,##0")?</span>
+                                    <span class="fw-bold text-danger">@order.TotalAmount.ToString("#,##0")₫</span>
                                 </td>
                                 <td>
                                     <small>@order.PaymentMethodDisplay</small>
@@ -103,14 +103,14 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-primary" title="Xem chi ti?t">
+                                        <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-primary" title="Xem chi tiết">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
                                         @if (order.Status == "Pending")
                                         {
                                             <form asp-action="Cancel" asp-route-id="@order.Id" method="post" class="d-inline"
-                                                  onsubmit="return confirm('B?n c� ch?c mu?n h?y don h�ng #@order.Id?')">
-                                                <button type="submit" class="btn btn-outline-danger" title="H?y don">
+                                                  onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng #@order.Id?')">
+                                                <button type="submit" class="btn btn-outline-danger" title="Hủy đơn">
                                                     <i class="fa-solid fa-xmark"></i>
                                                 </button>
                                             </form>
@@ -150,24 +150,24 @@
                                     <small class="fw-semibold">@mobileFirst.ProductName</small>
                                     @if (order.Items.Count > 1)
                                     {
-                                        <br><small class="text-muted">v� @(order.Items.Count - 1) s?n ph?m kh�c</small>
+                                        <br><small class="text-muted">và @(order.Items.Count - 1) sản phẩm khác</small>
                                     }
                                 </div>
                             }
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center">
-                            <strong class="text-danger">@order.TotalAmount.ToString("#,##0")?</strong>
+                            <strong class="text-danger">@order.TotalAmount.ToString("#,##0")₫</strong>
                             <div class="btn-group btn-group-sm">
                                 <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-primary btn-sm">
-                                    <i class="fa-solid fa-eye me-1"></i>Chi ti?t
+                                    <i class="fa-solid fa-eye me-1"></i>Chi tiết
                                 </a>
                                 @if (order.Status == "Pending")
                                 {
                                     <form asp-action="Cancel" asp-route-id="@order.Id" method="post" class="d-inline"
-                                          onsubmit="return confirm('B?n c� ch?c mu?n h?y don h�ng #@order.Id?')">
+                                          onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng #@order.Id?')">
                                         <button type="submit" class="btn btn-outline-danger btn-sm">
-                                            <i class="fa-solid fa-xmark me-1"></i>H?y
+                                            <i class="fa-solid fa-xmark me-1"></i>Hủy
                                         </button>
                                     </form>
                                 }
@@ -180,7 +180,7 @@
 
         <!-- Summary -->
         <div class="text-muted text-center mt-3">
-            <small>T?ng c?ng <strong>@Model.Count</strong> don h�ng</small>
+            <small>Tổng cộng <strong>@Model.Count</strong> đơn hàng</small>
         </div>
     }
 </div>

@@ -60,7 +60,7 @@ namespace WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        // C?p nh?t s? lu?ng
+        // C?p nh?t s? l??ng
         [HttpPost]
         public IActionResult UpdateQuantity(int productId, int quantity)
         {
@@ -118,7 +118,7 @@ namespace WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        // L?y s? lu?ng trong gi?
+        // L?y s? l??ng trong gi?
         [HttpGet]
         public IActionResult GetCartCount()
         {
