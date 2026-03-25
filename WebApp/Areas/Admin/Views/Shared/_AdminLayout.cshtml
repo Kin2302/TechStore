@@ -250,6 +250,12 @@
 
             <div class="sidebar-heading">Hệ thống</div>
 
+            <a class="sidebar-link @(currentController == "User" ? "active" : "")"
+               asp-controller="User" asp-action="Index">
+                <i class="fa-solid fa-users-gear"></i>
+                <span>Người dùng & quyền</span>
+            </a>
+
             <a class="sidebar-link" asp-area="" asp-controller="Home" asp-action="Index">
                 <i class="fa-solid fa-arrow-left"></i>
                 <span>Về trang chủ</span>
