@@ -39,6 +39,14 @@ namespace WebApp
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultUI();
 
+            // Google OAuth
+            builder.Services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+                });
+
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
             builder.Services.AddDistributedMemoryCache();
@@ -70,6 +78,10 @@ namespace WebApp
             // GHN
             builder.Services.Configure<GHNOptions>(builder.Configuration.GetSection("GHN"));
             builder.Services.AddHttpClient<IGHNService, GHNService>();
+
+            // SMTP
+            builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
             // === AI PLUGINS ===
             builder.Services.AddScoped<ProductPlugin>();

@@ -21,12 +21,18 @@ namespace TechStore.Infrastructure.Services
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OrderService> logger;
         private readonly IGHNService _ghnService;
+        private readonly IEmailService _emailService;
 
-        public OrderService(ApplicationDbContext context, ILogger<OrderService> logger, IGHNService ghnService)
+        public OrderService(
+            ApplicationDbContext context,
+            ILogger<OrderService> logger,
+            IGHNService ghnService,
+            IEmailService emailService)
         {
             _context = context;
             this.logger = logger;
             _ghnService = ghnService;
+            _emailService = emailService;
         }
 
         
@@ -151,6 +157,21 @@ namespace TechStore.Infrastructure.Services
                 catch (Exception ex)
                 {
                     logger.LogWarning(ex, "Create GHN shipment failed for order {OrderId}", order.Id);
+                }
+
+                try
+                {
+                    await _emailService.SendOrderCreatedEmailAsync(
+                        checkout.Email,
+                        order.Id,
+                        checkout.FullName,
+                        order.TotalAmount,
+                        order.ShippingFee,
+                        cartItems);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Send email failed for order {OrderId}", order.Id);
                 }
 
                 return new CreateOrderResult
