@@ -69,7 +69,11 @@
         <div class="card shadow-sm border-0">
             <div class="card-body py-3">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+<<<<<<< HEAD
                     <h6 class="mb-0"><i class="fa-solid fa-chart-pie me-2"></i>Phân bổ trạng thái</h6>
+=======
+                    <h6 class="mb-0"><i class="fa-solid fa-chart-pie me-2"></i>Phân bố trạng thái</h6>
+>>>>>>> momo_checkout
                     <div class="d-flex gap-3 flex-wrap">
                         <a asp-controller="Order" asp-action="Index" asp-route-status="Pending" class="text-decoration-none">
                             <span class="badge bg-warning text-dark px-3 py-2">
@@ -78,19 +82,31 @@
                         </a>
                         <a asp-controller="Order" asp-action="Index" asp-route-status="Confirmed" class="text-decoration-none">
                             <span class="badge bg-info px-3 py-2">
+<<<<<<< HEAD
                                 <i class="fa-solid fa-circle-check me-1"></i>Đã xác nhận: @Model.ConfirmedOrders
+=======
+                                <i class="fa-solid fa-circle-check me-1"></i>Ðã xác nhận: @Model.ConfirmedOrders
+>>>>>>> momo_checkout
                             </span>
                         </a>
                         <a asp-controller="Order" asp-action="Index" asp-route-status="Shipping" class="text-decoration-none">
                             <span class="badge bg-primary px-3 py-2">
+<<<<<<< HEAD
                                 <i class="fa-solid fa-truck me-1"></i>Đang giao: @Model.ShippingOrders
+=======
+                                <i class="fa-solid fa-truck me-1"></i>Ðang giao: @Model.ShippingOrders
+>>>>>>> momo_checkout
                             </span>
                         </a>
                         <span class="badge bg-success px-3 py-2">
                             <i class="fa-solid fa-flag-checkered me-1"></i>Hoàn thành: @Model.CompletedOrders
                         </span>
                         <span class="badge bg-danger px-3 py-2">
+<<<<<<< HEAD
                             <i class="fa-solid fa-ban me-1"></i>Đã hủy: @Model.CancelledOrders
+=======
+                            <i class="fa-solid fa-ban me-1"></i>Ðã hủy: @Model.CancelledOrders
+>>>>>>> momo_checkout
                         </span>
                     </div>
                 </div>
@@ -108,7 +124,11 @@
                     <i class="fa-solid fa-calendar-day"></i>
                 </div>
                 <div>
+<<<<<<< HEAD
                     <h5 class="mb-0 fw-bold">@Model.TodayRevenue.ToString("#,##0")₫</h5>
+=======
+                    <h5 class="mb-0 fw-bold">@Model.TodayRevenue.ToString("#,##0")?</h5>
+>>>>>>> momo_checkout
                     <small class="text-muted">Doanh thu hôm nay</small>
                 </div>
             </div>
@@ -122,7 +142,11 @@
                 </div>
                 <div>
                     <h5 class="mb-0 fw-bold">@Model.LowStockProducts</h5>
+<<<<<<< HEAD
                     <small class="text-muted">Sản phẩm sắp hết hàng (<= 5)</small>
+=======
+                    <small class="text-muted">Sản phẩm sắp hết hàng (= 5)</small>
+>>>>>>> momo_checkout
                 </div>
             </div>
         </div>
@@ -130,11 +154,19 @@
 </div>
 
 <div class="row g-4">
+<<<<<<< HEAD
     <!-- Đơn hàng gần đây -->
     <div class="col-lg-7">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h6 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Đơn hàng gần đây</h6>
+=======
+    <!-- Ðon hàng g?n dây -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Ðơn hàng gần đây</h6>
+>>>>>>> momo_checkout
                 <a asp-controller="Order" asp-action="Index" class="btn btn-sm btn-outline-primary">
                     Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i>
                 </a>
@@ -188,7 +220,11 @@
         </div>
     </div>
 
+<<<<<<< HEAD
     <!-- SP bán chạy -->
+=======
+    <!-- SP bán ch?y -->
+>>>>>>> momo_checkout
     <div class="col-lg-5">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white">

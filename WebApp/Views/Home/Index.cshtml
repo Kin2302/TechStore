@@ -101,7 +101,7 @@
                                 </a>
 
                                 <div class="quick-actions">
-                                    <button class="btn btn-light btn-sm" title="Yêu thích">
+                                    <button class="btn btn-light btn-sm wishlist-btn" title="Yêu thích" data-product-id="@item.Id">
                                         <i class="fa-regular fa-heart"></i>
                                     </button>
                                     <button class="btn btn-light btn-sm compare-btn" title="So sánh" data-product-id="@item.Id">
@@ -157,6 +157,7 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // Add to cart
             $('.add-cart-btn').click(function (e) {
                 e.preventDefault();
 
@@ -196,6 +197,9 @@
                 });
             });
 
+            // Wishlist handled globally in layout (delegated) to support dynamic content
+
+            // Compare
             $('.compare-btn').click(function (e) {
                 e.preventDefault();
                 var productId = $(this).data('product-id');

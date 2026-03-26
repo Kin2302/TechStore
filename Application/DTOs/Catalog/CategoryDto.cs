@@ -1,11 +1,11 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Application.DTOs.Catalog {
     public class CategoryDto
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Vui l�ng nh?p t�n danh m?c")]
+        [Required(ErrorMessage = "Vui lòng nhập tên danh mục")]
         public string Name { get; set; } = default!;
 
         public string? Slug { get; set; }

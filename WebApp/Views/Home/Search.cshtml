@@ -59,32 +59,11 @@
     <div class="row g-4">
         <!-- Sidebar Filter -->
         <div class="col-lg-3">
+            @* Render scrollable category sidebar *@
+            @{ await Html.RenderPartialAsync("_CategorySidebar", categories); }
+
             <form asp-action="Search" method="get" id="filterForm">
                 <input type="hidden" name="q" value="@keyword" />
-
-                <!-- Danh mục -->
-                <div class="card shadow-sm border-0 mb-3">
-                    <div class="card-header bg-white border-bottom">
-                        <h6 class="mb-0"><i class="fa-solid fa-folder-tree text-warning me-2"></i>Danh mục</h6>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="list-group list-group-flush">
-                            <a asp-action="Search" asp-route-q="@keyword"
-                               class="list-group-item list-group-item-action border-0 px-0 py-2 @(categoryId == null ? "fw-bold text-primary" : "")">
-                                <i class="fa-solid fa-th-large me-2"></i>Tất cả danh mục
-                            </a>
-                            @foreach (var cat in categories)
-                            {
-                                <a asp-action="Search" asp-route-q="@keyword" asp-route-categoryId="@cat.Id"
-                                   asp-route-minPrice="@minPrice" asp-route-maxPrice="@maxPrice"
-                                   asp-route-sortBy="@sortBy"
-                                   class="list-group-item list-group-item-action border-0 px-0 py-2 @(categoryId == cat.Id ? "fw-bold text-primary" : "")">
-                                    <i class="fa-solid fa-chevron-right me-2 small"></i>@cat.Name
-                                </a>
-                            }
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Khoảng giá -->
                 <div class="card shadow-sm border-0 mb-3">

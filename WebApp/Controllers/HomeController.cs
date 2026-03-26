@@ -26,6 +26,9 @@ namespace WebApp.Controllers
         public async Task<IActionResult> Index()
         {
             var products = await _productService.GetFeaturedAsync(12);
+            // load categories for sidebar (used in layout/partials)
+            var categories = await _productService.GetCategoriesAsync();
+            ViewBag.Categories = categories;
             return View(products);
         }
 

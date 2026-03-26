@@ -1,0 +1,107 @@
+﻿@model List<Application.DTOs.Catalog.CompareItemDto>
+
+@{
+    ViewData["Title"] = "Yêu thích";
+}
+@{
+    // ensure response uses UTF-8 so Vietnamese diacritics render correctly
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="fa-regular fa-heart text-danger me-2"></i>
+            Danh sách yêu thích
+        </h4>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">Quay lại</a>
+    </div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            $(document).on('submit', '.remove-wishlist-form', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var productId = form.data('product-id');
+                var btn = form.find('button[type=submit]');
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: form.attr('action') || '/Wishlist/Remove',
+                    type: 'POST',
+                    data: { productId: productId },
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function (res) {
+                        if (res.success) {
+                            // remove card
+                            form.closest('.col-md-6').fadeOut(300, function () { $(this).remove(); });
+                            $('#wishlistCount').text(res.count);
+                            if ($('.remove-wishlist-form').length === 0) {
+                                location.reload();
+                            }
+                        } else {
+                            alert('Không thể xóa mục này.');
+                            btn.prop('disabled', false);
+                        }
+                    },
+                    error: function () { btn.prop('disabled', false); }
+                });
+            });
+        });
+    </script>
+}
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center py-5">
+                <i class="fa-regular fa-heart fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Không có sản phẩm yêu thích</h5>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-2">Tiếp tục mua sắm</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var item in Model)
+            {
+                var avatar = string.IsNullOrEmpty(item.ImageUrl) ? "https://via.placeholder.com/150" : item.ImageUrl;
+                var priceText = item.Price.ToString("#,##0");
+
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="row g-0 align-items-center">
+                            <div class="col-4 text-center p-3">
+                                <img src="@avatar" alt="@item.Name" style="width:100%;height:100px;object-fit:contain;" />
+                            </div>
+
+                            <div class="col-8">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-1">@item.Name</h6>
+
+                                    <p class="text-danger fw-bold mb-1">@priceText ₫</p>
+
+                                    <div class="d-flex gap-2">
+                                        <form asp-controller="Wishlist" asp-action="Remove" method="post" class="d-inline remove-wishlist-form" data-product-id="@item.ProductId">
+                                            <input type="hidden" name="productId" value="@item.ProductId" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>
+                                        </form>
+
+                                        <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                                            <input type="hidden" name="productId" value="@item.ProductId" />
+                                            <input type="hidden" name="quantity" value="1" />
+                                            <button type="submit" class="btn btn-primary btn-sm">Thêm vào giỏ</button>
+                                        </form>
+
+                                        <a asp-controller="Home" asp-action="Detail" asp-route-id="@item.ProductId" class="btn btn-outline-secondary btn-sm">Xem</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

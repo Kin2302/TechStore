@@ -70,6 +70,7 @@ namespace WebApp
             builder.Services.AddScoped<IAdminBrandService, AdminBrandService>();
             builder.Services.AddScoped<ICompareService, CompareService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<Application.Interfaces.Catalog.IWishlistService, TechStore.Infrastructure.Services.WishlistService>();
 
             // MoMo
             builder.Services.Configure<MoMoOptions>(builder.Configuration.GetSection("MoMo"));
@@ -98,6 +99,27 @@ namespace WebApp
 
             var app = builder.Build();
 
+            // Initialize database, roles and default users at startup
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var db = services.GetRequiredService<ApplicationDbContext>();
+                    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                    // Run migrations and seed data
+                    DbInitializer.InitializeAsync(db, userManager, roleManager).GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+                }
+            }
+
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -106,13 +128,25 @@ namespace WebApp
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
+
+            // Ensure HTML responses include charset=utf-8 to avoid encoding issues in browsers
+            app.Use(async (context, next) =>
+            {
+                await next();
+                var ct = context.Response.ContentType;
+                if (!string.IsNullOrEmpty(ct) && ct.StartsWith("text/html", System.StringComparison.OrdinalIgnoreCase) && !ct.Contains("charset", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.ContentType = ct + "; charset=utf-8";
+                }
+            });
+
+            app.UseSession();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseSession();
+            
 
             app.MapControllerRoute(
                 name: "areas",

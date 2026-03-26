@@ -10,39 +10,70 @@ namespace TechStore.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "ShippingCode",
-                table: "Orders",
-                type: "nvarchar(max)",
-                nullable: true);
+            // Use conditional SQL to avoid duplicate column errors if columns already exist
+            migrationBuilder.Sql(@"
+IF NOT EXISTS(
+    SELECT 1 FROM sys.columns
+    WHERE Name = 'ShippingCode' AND Object_ID = Object_ID('dbo.Orders')
+)
+BEGIN
+    ALTER TABLE [Orders] ADD [ShippingCode] nvarchar(max) NULL;
+END
+");
 
-            migrationBuilder.AddColumn<string>(
-                name: "ShippingProvider",
-                table: "Orders",
-                type: "nvarchar(max)",
-                nullable: true);
+            migrationBuilder.Sql(@"
+IF NOT EXISTS(
+    SELECT 1 FROM sys.columns
+    WHERE Name = 'ShippingProvider' AND Object_ID = Object_ID('dbo.Orders')
+)
+BEGIN
+    ALTER TABLE [Orders] ADD [ShippingProvider] nvarchar(max) NULL;
+END
+");
 
-            migrationBuilder.AddColumn<string>(
-                name: "ShippingStatusRaw",
-                table: "Orders",
-                type: "nvarchar(max)",
-                nullable: true);
+            migrationBuilder.Sql(@"
+IF NOT EXISTS(
+    SELECT 1 FROM sys.columns
+    WHERE Name = 'ShippingStatusRaw' AND Object_ID = Object_ID('dbo.Orders')
+)
+BEGIN
+    ALTER TABLE [Orders] ADD [ShippingStatusRaw] nvarchar(max) NULL;
+END
+");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ShippingCode",
-                table: "Orders");
+            migrationBuilder.Sql(@"
+IF EXISTS(
+    SELECT 1 FROM sys.columns
+    WHERE Name = 'ShippingCode' AND Object_ID = Object_ID('dbo.Orders')
+)
+BEGIN
+    ALTER TABLE [Orders] DROP COLUMN [ShippingCode];
+END
+");
 
-            migrationBuilder.DropColumn(
-                name: "ShippingProvider",
-                table: "Orders");
+            migrationBuilder.Sql(@"
+IF EXISTS(
+    SELECT 1 FROM sys.columns
+    WHERE Name = 'ShippingProvider' AND Object_ID = Object_ID('dbo.Orders')
+)
+BEGIN
+    ALTER TABLE [Orders] DROP COLUMN [ShippingProvider];
+END
+");
 
-            migrationBuilder.DropColumn(
-                name: "ShippingStatusRaw",
-                table: "Orders");
+            migrationBuilder.Sql(@"
+IF EXISTS(
+    SELECT 1 FROM sys.columns
+    WHERE Name = 'ShippingStatusRaw' AND Object_ID = Object_ID('dbo.Orders')
+)
+BEGIN
+    ALTER TABLE [Orders] DROP COLUMN [ShippingStatusRaw];
+END
+");
         }
     }
 }

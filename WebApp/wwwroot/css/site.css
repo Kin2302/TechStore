@@ -349,3 +349,32 @@ body {
         margin: .75rem 0;
     }
 }
+
+/* ===== CATEGORY SIDEBAR ===== */
+.category-sidebar {
+    max-height: 520px;
+    display: flex;
+    flex-direction: column;
+}
+.category-sidebar .card-body {
+    overflow: hidden;
+}
+.category-list {
+    max-height: 420px;
+    overflow-y: auto;
+}
+.category-list::-webkit-scrollbar {
+    width: 10px;
+}
+.category-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.category-list::-webkit-scrollbar-thumb {
+    background: rgba(15,23,42,0.12);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+.category-link { color: var(--ts-text); }
+.category-link:hover { color: var(--ts-primary); }
+.category-sidebar.collapsed { display: none; }

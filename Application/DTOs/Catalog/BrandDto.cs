@@ -5,7 +5,7 @@ namespace Application.DTOs.Catalog {
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhậpp tên thuong hiệu")]
+        [Required(ErrorMessage = "Vui lòng nhập tên thương hiệu")]
         public string Name { get; set; } = default!;
 
         public string? Origin { get; set; }
