@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Application.DTOs.Integration;
 using Application.DTOs.Orders;
@@ -14,15 +15,18 @@ namespace WebApp.Controllers
         private readonly IOrderService _orderService;
         private readonly ICartService _cartService;
         private readonly IGHNService _ghnService;
+        private readonly TechStore.Infrastructure.Data.ApplicationDbContext _context;
 
         public OrderController(
             IOrderService orderService,
             ICartService cartService,
-            IGHNService ghnService)
+            IGHNService ghnService,
+            TechStore.Infrastructure.Data.ApplicationDbContext context)
         {
             _orderService = orderService;
             _cartService = cartService;
             _ghnService = ghnService;
+            _context = context;
         }
 
         [HttpGet]
@@ -35,10 +39,39 @@ namespace WebApp.Controllers
             }
 
             ViewBag.CartItems = cartItems;
-            ViewBag.CartTotal = cartItems.Sum(x => x.Total);
-            ViewBag.Provinces = await _ghnService.GetProvincesAsync(cancellationToken);
+            var cartTotal = cartItems.Sum(x => x.Total);
+            ViewBag.CartTotal = cartTotal;
 
-            return View(new CheckoutDto());
+            // Check if a coupon code is saved in session and compute discount for display
+            var appliedCode = _cartService.GetCouponCode();
+            decimal discountAmount = 0m;
+            decimal discountedTotal = cartTotal;
+            string? couponMessage = null;
+
+            if (!string.IsNullOrWhiteSpace(appliedCode))
+            {
+                var coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Code == appliedCode && c.IsActive && !c.IsDeleted, cancellationToken);
+                if (coupon != null)
+                {
+                    var now = DateTime.UtcNow;
+                    if (!(coupon.StartDate.HasValue && coupon.StartDate.Value > now) && !(coupon.EndDate.HasValue && coupon.EndDate.Value < now) && !(coupon.UsageLimit.HasValue && coupon.UsedCount >= coupon.UsageLimit.Value))
+                    {
+                        discountAmount = coupon.IsPercent ? Math.Round(cartTotal * (coupon.Amount / 100m), 2) : coupon.Amount;
+                        if (discountAmount > cartTotal) discountAmount = cartTotal;
+                        discountedTotal = cartTotal - discountAmount;
+                        couponMessage = coupon.IsPercent ? $"Áp dụng: {coupon.Amount}%" : $"Áp dụng: {coupon.Amount:N0}₫";
+                    }
+                }
+            }
+
+            ViewBag.Provinces = await _ghnService.GetProvincesAsync(cancellationToken);
+            ViewBag.DiscountAmount = discountAmount;
+            ViewBag.DiscountedTotal = discountedTotal;
+            ViewBag.CouponMessage = couponMessage;
+
+            var model = new CheckoutDto();
+            model.CouponCode = appliedCode;
+            return View(model);
         }
 
         [HttpPost]

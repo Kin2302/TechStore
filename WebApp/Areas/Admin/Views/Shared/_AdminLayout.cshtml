@@ -232,6 +232,12 @@
                 <span>Sản phẩm</span>
             </a>
 
+            <a class="sidebar-link @(currentController == "Coupon" ? "active" : "")"
+               asp-area="Admin" asp-controller="Coupon" asp-action="Index">
+                <i class="fa-solid fa-ticket"></i>
+                <span>Phiếu giảm giá</span>
+            </a>
+
             <div class="sidebar-heading">Danh mục</div>
 
             <a class="sidebar-link @(currentController == "Category" ? "active" : "")"

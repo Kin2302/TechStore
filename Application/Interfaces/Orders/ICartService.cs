@@ -18,5 +18,7 @@ namespace Application.Interfaces.Orders {
         int GetCartCount();
         decimal GetCartTotal();
         void ClearCart();
+        string? GetCouponCode();
+        void SetCouponCode(string? code);
     }
 }

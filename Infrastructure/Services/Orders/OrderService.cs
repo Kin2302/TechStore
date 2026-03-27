@@ -84,6 +84,39 @@ namespace TechStore.Infrastructure.Services
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                // calculate totals and apply coupon if provided
+                var cartTotal = cartItems.Sum(ci => ci.Total);
+
+                decimal discountAmount = 0m;
+                Coupon? coupon = null;
+                if (!string.IsNullOrWhiteSpace(checkout.CouponCode))
+                {
+                    coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Code == checkout.CouponCode && c.IsActive && !c.IsDeleted);
+                    if (coupon == null)
+                    {
+                        return new CreateOrderResult { Success = false, ErrorMessage = "Mã giảm giá không hợp lệ hoặc đã bị tắt" };
+                    }
+
+                    var now = DateTime.UtcNow;
+                    if (coupon.StartDate.HasValue && coupon.StartDate.Value > now)
+                        return new CreateOrderResult { Success = false, ErrorMessage = "Mã chưa có hiệu lực" };
+                    if (coupon.EndDate.HasValue && coupon.EndDate.Value < now)
+                        return new CreateOrderResult { Success = false, ErrorMessage = "Mã đã hết hạn" };
+                    if (coupon.UsageLimit.HasValue && coupon.UsedCount >= coupon.UsageLimit.Value)
+                        return new CreateOrderResult { Success = false, ErrorMessage = "Mã đã đạt giới hạn sử dụng" };
+
+                    if (coupon.IsPercent)
+                    {
+                        discountAmount = Math.Round(cartTotal * (coupon.Amount / 100m), 2);
+                    }
+                    else
+                    {
+                        discountAmount = coupon.Amount;
+                    }
+
+                    if (discountAmount > cartTotal) discountAmount = cartTotal;
+                }
+
                 var order = new Order
                 {
                     UserId = userId,
@@ -94,7 +127,7 @@ namespace TechStore.Infrastructure.Services
                     PaymentMethod = checkout.PaymentMethod,
                     OrderDate = DateTime.UtcNow,
                     ShippingFee = checkout.ShippingFee, // NEW
-                    TotalAmount = cartItems.Sum(ci => ci.Total) + checkout.ShippingFee,
+                    TotalAmount = cartTotal + checkout.ShippingFee - discountAmount,
                     Status = OrderStatus.Pending
                 };
 
@@ -116,6 +149,14 @@ namespace TechStore.Infrastructure.Services
                     {
                         product.Stock -= item.Quantity;
                     }
+                }
+
+                // persist coupon usage if applied
+                if (coupon != null)
+                {
+                    coupon.UsedCount += 1;
+                    coupon.UpdatedDate = DateTime.UtcNow;
+                    _context.Coupons.Update(coupon);
                 }
 
                 _context.Orders.Add(order);

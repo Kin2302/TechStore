@@ -20,6 +20,7 @@ namespace TechStore.Infrastructure.Services
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private const string CartSessionKey = "Cart";
+        private const string CouponSessionKey = "CouponCode";
 
         public CartService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
@@ -74,6 +75,18 @@ namespace TechStore.Infrastructure.Services
         public void ClearCart()
         {
             Session.Remove(CartSessionKey);
+            Session.Remove(CouponSessionKey);
+        }
+
+        public string? GetCouponCode()
+        {
+            return Session.GetString(CouponSessionKey);
+        }
+
+        public void SetCouponCode(string? code)
+        {
+            if (string.IsNullOrEmpty(code)) Session.Remove(CouponSessionKey);
+            else Session.SetString(CouponSessionKey, code);
         }
     }
 }

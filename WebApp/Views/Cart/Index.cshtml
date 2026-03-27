@@ -118,16 +118,7 @@
                     </div>
                 </div>
 
-                <!-- Mã giảm giá (tùy chọn) -->
-                <div class="card shadow-sm mt-3">
-                    <div class="card-body">
-                        <h6><i class="fa-solid fa-ticket"></i> Mã giảm giá</h6>
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Nhập mã giảm giá">
-                            <button class="btn btn-outline-primary">Áp dụng</button>
-                        </div>
-                    </div>
-                </div>
+                <!-- Coupon moved to Checkout page -->
             </div>
         </div>
     }
@@ -216,6 +207,39 @@
             function formatCurrency(num) {
                 return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             }
+
+            // Apply coupon from Cart page
+            $('#cartApplyCouponBtn').click(function() {
+                var code = $('#cartCouponInput').val();
+                var msgEl = $('#cartCouponMessage');
+                if (!code) {
+                    msgEl.text('Vui lòng nhập mã.');
+                    return;
+                }
+                msgEl.text('Đang áp...');
+                $.post('@Url.Action("ApplyCoupon", "Cart")', { code: code }, function(res) {
+                    if (res.success) {
+                        msgEl.removeClass('text-danger').addClass('text-success').text('Mã hợp lệ.');
+                        $('#cartCouponDetail').removeClass('d-none').text('Giảm: ' + formatCurrency(res.discountAmount) + '₫ — Tổng sau khi giảm: ' + formatCurrency(res.discountedTotal) + '₫');
+                        $('#grandTotal').text(formatCurrency(res.discountedTotal) + '₫');
+                    } else {
+                        msgEl.removeClass('text-success').addClass('text-danger').text(res.message || 'Không thể áp mã.');
+                        $('#cartCouponDetail').addClass('d-none').text('');
+                    }
+                }).fail(function() { msgEl.addClass('text-danger').text('Lỗi khi áp mã.'); $('#cartCouponDetail').addClass('d-none').text(''); });
+            });
+
+            // On load, check if coupon already applied
+            (function loadApplied() {
+                $.get('@Url.Action("GetAppliedCoupon", "Cart")', function(res) {
+                    if (res.applied) {
+                        $('#cartCouponInput').val(res.code);
+                        $('#cartCouponMessage').removeClass('text-danger').addClass('text-success').text('Mã đã áp dụng');
+                        $('#cartCouponDetail').removeClass('d-none').text('Giảm: ' + formatCurrency(res.discountAmount) + '₫ — Tổng sau khi giảm: ' + formatCurrency(res.discountedTotal) + '₫');
+                        $('#grandTotal').text(formatCurrency(res.discountedTotal) + '₫');
+                    }
+                });
+            })();
         });
     </script>
 }

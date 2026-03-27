@@ -28,5 +28,7 @@ namespace Application.DTOs.Orders
         public int DistrictId { get; set; }
         public string WardCode { get; set; } = "";
         public decimal ShippingFee { get; set; }
+        // Optional coupon code entered by user
+        public string? CouponCode { get; set; }
     }
 }

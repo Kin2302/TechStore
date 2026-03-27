@@ -257,6 +257,22 @@
                             </div>
                         </div>
                     </div>
+                    <div class="card-footer bg-white p-3">
+                        <div class="mb-2">
+                            <label class="form-label">Mã giảm giá</label>
+                            <div class="input-group">
+                                <input type="text" id="checkoutCouponInput" name="CouponCode" value="@(Model?.CouponCode ?? ViewBag.CouponCode ?? "")" class="form-control" placeholder="Nhập mã giảm giá" />
+                                <button type="button" id="applyCouponBtn" class="btn btn-outline-primary">Áp dụng</button>
+                            </div>
+                            <div id="couponMessage" class="small mt-2 text-muted">@ViewBag.CouponMessage</div>
+                            <div id="couponDetail" class="small mt-1 text-success">
+                                @if (ViewBag.DiscountAmount != null && (decimal)ViewBag.DiscountAmount > 0)
+                                {
+                                    <text>Giảm: @((decimal)ViewBag.DiscountAmount).ToString("#,##0")₫ — Tổng sau khi giảm: @((decimal)ViewBag.DiscountedTotal).ToString("#,##0")₫</text>
+                                }
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Nút đặt hàng -->
                     <div class="card-footer bg-white p-3">
@@ -309,6 +325,48 @@
             shippingFeeText.textContent = formatVnd(fee);
             grandTotalText.textContent = formatVnd(cartTotal + fee);
         }
+
+        // Coupon handling
+        document.getElementById('applyCouponBtn')?.addEventListener('click', async function () {
+            const input = document.getElementById('checkoutCouponInput');
+            const code = input.value.trim();
+            const msgEl = document.getElementById('couponMessage');
+            const detailEl = document.getElementById('couponDetail');
+
+            if (!code) {
+                msgEl.textContent = 'Vui lòng nhập mã.';
+                return;
+            }
+
+            msgEl.textContent = 'Đang kiểm tra...';
+            try {
+                const res = await fetch(`/Cart/ApplyCoupon`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `code=${encodeURIComponent(code)}`
+                });
+                const data = await res.json();
+                if (data.success) {
+                    msgEl.classList.remove('text-danger');
+                    msgEl.classList.add('text-success');
+                    msgEl.textContent = data.message || 'Mã hợp lệ.';
+                    if (typeof data.discountAmount === 'number') {
+                        detailEl.textContent = `Giảm: ${formatVnd(data.discountAmount)} — Tổng sau khi giảm: ${formatVnd(data.discountedTotal)}`;
+                        document.getElementById('grandTotalText').textContent = formatVnd(data.discountedTotal);
+                    }
+                } else {
+                    msgEl.classList.remove('text-success');
+                    msgEl.classList.add('text-danger');
+                    msgEl.textContent = data.message || 'Mã không hợp lệ.';
+                    detailEl.textContent = '';
+                }
+            } catch (e) {
+                msgEl.classList.remove('text-success');
+                msgEl.classList.add('text-danger');
+                msgEl.textContent = 'Lỗi khi kiểm tra mã.';
+                detailEl.textContent = '';
+            }
+        });
 
         function resetSelect(select, placeholder) {
             select.innerHTML = `<option value="">${placeholder}</option>`;

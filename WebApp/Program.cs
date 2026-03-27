@@ -39,13 +39,18 @@ namespace WebApp
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultUI();
 
-            // Google OAuth
-            builder.Services.AddAuthentication()
-                .AddGoogle(options =>
-                {
-                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
-                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
-                });
+            // Google OAuth - only register if client id/secret configured to avoid options validation error at startup
+            var googleClientId = builder.Configuration["Authentication:Google:ClientId"]; 
+            var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]; 
+            if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+            {
+                builder.Services.AddAuthentication()
+                    .AddGoogle(options =>
+                    {
+                        options.ClientId = googleClientId;
+                        options.ClientSecret = googleClientSecret;
+                    });
+            }
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
@@ -66,6 +71,7 @@ namespace WebApp
             builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IAdminProductService, AdminProductService>();
+            builder.Services.AddScoped<Application.Interfaces.Admin.IAdminCouponService, Infrastructure.Services.Admin.AdminCouponService>();
             builder.Services.AddScoped<IAdminCategoryService, AdminCategoryService>();
             builder.Services.AddScoped<IAdminBrandService, AdminBrandService>();
             builder.Services.AddScoped<ICompareService, CompareService>();

@@ -1,0 +1,52 @@
+﻿@model List<Application.DTOs.Catalog.CouponDto>
+
+@{
+    ViewData["Title"] = "Quản lý phiếu giảm giá";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">@ViewData["Title"]</h4>
+    <a asp-action="Create" class="btn btn-primary">Thêm phiếu giảm giá</a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Mã</th>
+                    <th>Loại</th>
+                    <th>Giá trị</th>
+                    <th>Hạn</th>
+                    <th>Trạng thái</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>@c.Id</td>
+                        <td><code>@c.Code</code></td>
+                        <td>@(c.IsPercent ? "Phần trăm" : "Tiền")</td>
+                        <td>@(c.IsPercent ? c.Amount + " %" : c.Amount.ToString("#,##0") + "₫")</td>
+                        <td>@(c.StartDate?.ToString("dd/MM/yyyy") ?? "-") - @(c.EndDate?.ToString("dd/MM/yyyy") ?? "-")</td>
+                        <td>@(c.IsActive ? "Kích hoạt" : "Tắt")</td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            <form asp-action="Delete" asp-route-id="@c.Id" method="post" class="d-inline" onsubmit="return confirm('Xóa phiếu này?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

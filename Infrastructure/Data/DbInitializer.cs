@@ -29,9 +29,47 @@ namespace TechStore.Infrastructure.Data
             // ✅ TẠO HOẶC RESET USER
             await CreateOrResetUserAsync(userManager, "user@techstore.com", "User@123", "User");
 
-            // Seed product data
-            if (await context.Brands.AnyAsync()) return;
-            await SeedProductDataAsync(context);
+            // Seed product data if not present
+            if (!await context.Brands.AnyAsync())
+            {
+                await SeedProductDataAsync(context);
+            }
+
+            // Seed example coupons if none exist
+            if (!await context.Coupons.AnyAsync())
+            {
+                context.Coupons.AddRange(new[]
+                {
+                    new Coupon
+                    {
+                        Code = "WELCOME10",
+                        IsPercent = true,
+                        Amount = 10m,
+                        Description = "Giảm 10% cho đơn hàng đầu tiên",
+                        StartDate = DateTime.UtcNow.AddDays(-1),
+                        EndDate = DateTime.UtcNow.AddMonths(1),
+                        UsageLimit = null,
+                        UsedCount = 0,
+                        IsActive = true,
+                        CreatedDate = DateTime.UtcNow
+                    },
+                    new Coupon
+                    {
+                        Code = "SHIP50K",
+                        IsPercent = false,
+                        Amount = 50000m,
+                        Description = "Giảm 50k cho đơn hàng từ 500k",
+                        StartDate = DateTime.UtcNow.AddDays(-1),
+                        EndDate = DateTime.UtcNow.AddMonths(2),
+                        UsageLimit = 100,
+                        UsedCount = 0,
+                        IsActive = true,
+                        CreatedDate = DateTime.UtcNow
+                    }
+                });
+
+                await context.SaveChangesAsync();
+            }
         }
 
         private static async Task CreateOrResetUserAsync(

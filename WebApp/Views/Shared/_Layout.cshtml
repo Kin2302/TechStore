@@ -131,28 +131,11 @@
                               && string.Equals(action, "Search", System.StringComparison.OrdinalIgnoreCase));
     }
 
-    @if (hideSidebar)
-    {
-        <div class="container-fluid layout-main">
-            <main role="main" class="pb-3 pt-3">
-                @RenderBody()
-            </main>
-        </div>
-    }
-    else
-    {
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-lg-3 d-none d-lg-block">
-                    @{ var cats = ViewBag.Categories as IEnumerable<TechStore.Domain.Entities.Category> ?? Enumerable.Empty<TechStore.Domain.Entities.Category>(); }
-                    @{ await Html.RenderPartialAsync("_CategorySidebar", cats); }
-                </div>
-                <div class="col-lg-9">
-                    @RenderBody()
-                </div>
-            </div>
-        </div>
-    }
+    <div class="container-fluid layout-main">
+        <main role="main" class="pb-3 pt-3">
+            @RenderBody()
+        </main>
+    </div>
 
     <footer class="tech-footer text-white text-center py-3 mt-auto">
         <div class="container">
