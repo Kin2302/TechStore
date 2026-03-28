@@ -186,6 +186,17 @@
                             </label>
                         </div>
 
+                        <div class="form-check border rounded-3 p-3 mb-3">
+                            <input class="form-check-input" type="radio" asp-for="PaymentMethod" value="VNPay" id="paymentVNPay">
+                            <label class="form-check-label w-100 d-flex align-items-center" for="paymentVNPay">
+                                <i class="fa-solid fa-credit-card fa-lg text-primary me-3"></i>
+                                <div>
+                                    <strong>VNPay</strong>
+                                    <br><small class="text-muted">Chuyển sang VNPay để thanh toán online</small>
+                                </div>
+                            </label>
+                        </div>
+
                         <div class="form-check border rounded-3 p-3">
                             <input class="form-check-input" type="radio" asp-for="PaymentMethod" value="BankTransfer" id="paymentBank">
                             <label class="form-check-label w-100 d-flex align-items-center" for="paymentBank">

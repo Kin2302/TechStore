@@ -1,4 +1,4 @@
-using Application.DTOs.Admin;
+ï»¿using Application.DTOs.Admin;
 using Application.DTOs.Catalog;
 using Application.DTOs.Integration;
 using Application.DTOs.Orders;
@@ -36,19 +36,21 @@ namespace Application.DTOs.Orders {
 
         public string StatusDisplay => Status switch
         {
-            "Pending" => "Ch? xác nh?n",
-            "Confirmed" => "Ðã xác nh?n",
-            "Shipping" => "Ðang giao hàng",
-            "Completed" => "Hoàn thành",
-            "Cancelled" => "Ðã h?y",
-            "Refunded" => "Ðã hoàn ti?n",
-            _ => Status  // default
+            "Pending" => "Chá» xÃ¡c nháº­n",
+            "Confirmed" => "ÄÃ£ xÃ¡c nháº­n",
+            "Shipping" => "Äang giao hÃ ng",
+            "Completed" => "HoÃ n thÃ nh",
+            "Cancelled" => "ÄÃ£ há»§y",
+            "Refunded" => "ÄÃ£ hoÃ n tiá»n",
+            _ => Status
         };
 
         public string PaymentMethodDisplay => PaymentMethod switch
         {
-            "COD" => "Thanh toán khi nh?n hàng",
-            "BankTransfer" => "Chuy?n kho?n ngân hàng",
+            "COD" => "Thanh toÃ¡n khi nháº­n hÃ ng",
+            "BankTransfer" => "Chuyá»ƒn khoáº£n ngÃ¢n hÃ ng",
+            "MoMo" => "VÃ­ MoMo",
+            "VNPay" => "VNPay",
             _ => PaymentMethod
         };
 

@@ -96,6 +96,11 @@ namespace WebApp.Controllers
                     return RedirectToAction("ProcessMoMoPayment", "Payment", new { orderId = result.OrderId });
                 }
 
+                if (string.Equals(model.PaymentMethod, "VNPay", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RedirectToAction("ProcessVNPayPayment", "Payment", new { orderId = result.OrderId });
+                }
+
                 _cartService.ClearCart();
                 return RedirectToAction("Confirmation", new { id = result.OrderId });
             }

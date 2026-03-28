@@ -37,8 +37,17 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Search(string? q, int? categoryId, decimal? minPrice, decimal? maxPrice, string? sortBy = "name")
+        public async Task<IActionResult> Search(
+            string? q,
+            string? keyword,
+            int? categoryId,
+            decimal? minPrice,
+            decimal? maxPrice,
+            string? sortBy = "name")
         {
+            // Hỗ trợ cả q và keyword để tránh lệch tên query param
+            q ??= keyword;
+
             var products = await _productService.SearchAsync(q, categoryId, minPrice, maxPrice, sortBy);
             var categories = await _productService.GetCategoriesAsync();
 

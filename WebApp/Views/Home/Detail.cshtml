@@ -128,7 +128,7 @@
                                         @(Model.Stock == 0 ? "disabled" : "")>
                                     <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
                                 </button>
-                                <button class="btn btn-outline-danger btn-lg" title="Yêu thích">
+                                <button class="btn btn-outline-danger btn-lg wishlist-btn" title="Yêu thích" data-product-id="@Model.Id">
                                     <i class="fa-regular fa-heart"></i>
                                 </button>
                                 <button class="btn btn-outline-secondary btn-lg compare-btn" title="So sánh" data-product-id="@Model.Id">
@@ -372,6 +372,24 @@
                         if (response.success) {
                             $('#compareCount').text(response.compareCount);
                         }
+                    }
+                });
+            });
+
+            $('.wishlist-btn').click(function (e) {
+                e.preventDefault();
+                var btn = $(this);
+                var productId = btn.data('product-id');
+
+                $.post('@Url.Action("Add", "Wishlist")', { productId: productId }, function (response) {
+                    if (response.requireLogin && response.loginUrl) {
+                        window.location.href = response.loginUrl;
+                        return;
+                    }
+
+                    if (response.success) {
+                        $('#wishlistCount').text(response.wishlistCount);
+                        btn.find('i').removeClass('fa-regular').addClass('fa-solid');
                     }
                 });
             });

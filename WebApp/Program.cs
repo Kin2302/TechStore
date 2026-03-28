@@ -70,6 +70,7 @@ namespace WebApp
             builder.Services.AddScoped<IAdminBrandService, AdminBrandService>();
             builder.Services.AddScoped<ICompareService, CompareService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IWishlistService, WishlistService>();
 
             // MoMo
             builder.Services.Configure<MoMoOptions>(builder.Configuration.GetSection("MoMo"));
@@ -82,6 +83,10 @@ namespace WebApp
             // SMTP
             builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
             builder.Services.AddScoped<IEmailService, EmailService>();
+
+            // VNPay
+            builder.Services.Configure<VNPayOptions>(builder.Configuration.GetSection("VNPay"));
+            builder.Services.AddScoped<IVNPayService, VNPayService>();
 
             // === AI PLUGINS ===
             builder.Services.AddScoped<ProductPlugin>();
