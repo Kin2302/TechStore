@@ -1,25 +1,25 @@
-@model List<Application.DTOs.Orders.OrderDto>
+﻿@model List<Application.DTOs.Orders.OrderDto>
 
 @{
-    ViewData["Title"] = "Qu?n l� ??n h�ng";
+    ViewData["Title"] = "Quản lý đơn hàng";
     var currentStatus = ViewBag.CurrentStatus as string;
 
     var statusFilters = new[]
     {
-        new { Value = (string?)null, Label = "T?t c?", Icon = "fa-list", Color = "secondary" },
-        new { Value = (string?)"Pending", Label = "Ch? x�c nh?n", Icon = "fa-clock", Color = "warning" },
-        new { Value = (string?)"Confirmed", Label = "?� x�c nh?n", Icon = "fa-circle-check", Color = "info" },
-        new { Value = (string?)"Shipping", Label = "?ang giao", Icon = "fa-truck", Color = "primary" },
-        new { Value = (string?)"Completed", Label = "Ho�n th�nh", Icon = "fa-flag-checkered", Color = "success" },
-        new { Value = (string?)"Cancelled", Label = "?� h?y", Icon = "fa-ban", Color = "danger" },
+        new { Value = (string?)null, Label = "Tất cả", Icon = "fa-list", Color = "secondary" },
+        new { Value = (string?)"Pending", Label = "Chờ xác nhận", Icon = "fa-clock", Color = "warning" },
+        new { Value = (string?)"Confirmed", Label = "Đã xác nhận", Icon = "fa-circle-check", Color = "info" },
+        new { Value = (string?)"Shipping", Label = "Đang giao", Icon = "fa-truck", Color = "primary" },
+        new { Value = (string?)"Completed", Label = "Hoàn thành", Icon = "fa-flag-checkered", Color = "success" },
+        new { Value = (string?)"Cancelled", Label = "Đã hủy", Icon = "fa-ban", Color = "danger" },
     };
 }
 
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="mb-1"><i class="fa-solid fa-box me-2"></i>Qu?n l� ??n h�ng</h4>
-        <small class="text-muted">T?ng c?ng <strong>@Model.Count</strong> ??n h�ng</small>
+        <h4 class="mb-1"><i class="fa-solid fa-box me-2"></i>Quản lý đơn hàng</h4>
+        <small class="text-muted">Tổng cộng <strong>@Model.Count</strong> đơn hàng</small>
     </div>
 </div>
 
@@ -66,11 +66,11 @@
     <div class="card shadow-sm border-0">
         <div class="card-body text-center py-5">
             <i class="fa-solid fa-inbox fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">Kh�ng c� ??n h�ng n�o</h5>
+            <h5 class="text-muted">Không có đơn hàng nào</h5>
             @if (currentStatus != null)
             {
                 <a asp-action="Index" class="btn btn-outline-primary mt-2">
-                    <i class="fa-solid fa-arrow-left me-1"></i>Xem t?t c?
+                    <i class="fa-solid fa-arrow-left me-1"></i>Xem tất cả
                 </a>
             }
         </div>
@@ -83,14 +83,14 @@ else
             <table class="table table-hover mb-0 align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th style="width:80px;">M� ??n</th>
-                        <th>Kh�ch h�ng</th>
-                        <th>Ng�y ??t</th>
-                        <th>S?n ph?m</th>
-                        <th class="text-end">T?ng ti?n</th>
-                        <th>Thanh to�n</th>
-                        <th>Tr?ng th�i</th>
-                        <th class="text-center" style="width:100px;">Thao t�c</th>
+                        <th style="width:80px;">Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Sản phẩm</th>
+                        <th class="text-end">Tổng tiền</th>
+                        <th>Thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center" style="width:100px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,14 +125,14 @@ else
                                             <small class="fw-semibold text-truncate d-block" style="max-width:160px;">@firstItem.ProductName</small>
                                             @if (order.Items.Count > 1)
                                             {
-                                                <small class="text-muted">+@(order.Items.Count - 1) s?n ph?m kh�c</small>
+                                                <small class="text-muted">+@(order.Items.Count - 1) sản phẩm khác</small>
                                             }
                                         </div>
                                     </div>
                                 }
                             </td>
                             <td class="text-end">
-                                <span class="fw-bold text-danger">@order.TotalAmount.ToString("#,##0")?</span>
+                                <span class="fw-bold text-danger">@order.TotalAmount.ToString("#,##0")₫</span>
                             </td>
                             <td>
                                 <small>@order.PaymentMethodDisplay</small>
@@ -142,7 +142,7 @@ else
                             </td>
                             <td class="text-center">
                                 <a asp-action="Details" asp-route-id="@order.Id"
-                                   class="btn btn-sm btn-outline-primary" title="Xem chi ti?t">
+                                   class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
                             </td>

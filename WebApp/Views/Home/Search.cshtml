@@ -2,11 +2,14 @@
 
 @{
     ViewData["Title"] = "Tìm kiếm";
-    var keyword    = ViewBag.Keyword as string;
-    var categoryId = ViewBag.CategoryId as int?;
-    var minPrice   = ViewBag.MinPrice as decimal?;
-    var maxPrice   = ViewBag.MaxPrice as decimal?;
-    var sortBy     = ViewBag.SortBy as string ?? "name";
+    var keyword = ViewBag.Keyword as string;
+
+    // Ép kiểu an toàn hơn cho value type từ ViewBag
+    var categoryId = ViewBag.CategoryId != null ? (int?)Convert.ToInt32(ViewBag.CategoryId) : null;
+    var minPrice = ViewBag.MinPrice != null ? (decimal?)Convert.ToDecimal(ViewBag.MinPrice) : null;
+    var maxPrice = ViewBag.MaxPrice != null ? (decimal?)Convert.ToDecimal(ViewBag.MaxPrice) : null;
+
+    var sortBy = ViewBag.SortBy as string ?? "name";
     var categories = ViewBag.Categories as IEnumerable<TechStore.Domain.Entities.Category>
                      ?? Enumerable.Empty<TechStore.Domain.Entities.Category>();
 
@@ -36,7 +39,7 @@
     <!-- Search bar lớn -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-4">
-            <form asp-action="Search" method="get">
+            <form asp-controller="Home" asp-action="Search" method="get">
                 <div class="row g-2">
                     <div class="col-md-8">
                         <div class="input-group input-group-lg">
@@ -59,7 +62,7 @@
     <div class="row g-4">
         <!-- Sidebar Filter -->
         <div class="col-lg-3">
-            <form asp-action="Search" method="get" id="filterForm">
+            <form asp-controller="Home" asp-action="Search" method="get" id="filterForm">
                 <input type="hidden" name="q" value="@keyword" />
 
                 <!-- Danh mục -->
@@ -69,14 +72,21 @@
                     </div>
                     <div class="card-body p-3">
                         <div class="list-group list-group-flush">
-                            <a asp-action="Search" asp-route-q="@keyword"
+                            <a asp-controller="Home" asp-action="Search"
+                               asp-route-q="@keyword"
+                               asp-route-minPrice="@minPrice"
+                               asp-route-maxPrice="@maxPrice"
+                               asp-route-sortBy="@sortBy"
                                class="list-group-item list-group-item-action border-0 px-0 py-2 @(categoryId == null ? "fw-bold text-primary" : "")">
                                 <i class="fa-solid fa-th-large me-2"></i>Tất cả danh mục
                             </a>
                             @foreach (var cat in categories)
                             {
-                                <a asp-action="Search" asp-route-q="@keyword" asp-route-categoryId="@cat.Id"
-                                   asp-route-minPrice="@minPrice" asp-route-maxPrice="@maxPrice"
+                                <a asp-controller="Home" asp-action="Search"
+                                   asp-route-q="@keyword"
+                                   asp-route-categoryId="@cat.Id"
+                                   asp-route-minPrice="@minPrice"
+                                   asp-route-maxPrice="@maxPrice"
                                    asp-route-sortBy="@sortBy"
                                    class="list-group-item list-group-item-action border-0 px-0 py-2 @(categoryId == cat.Id ? "fw-bold text-primary" : "")">
                                     <i class="fa-solid fa-chevron-right me-2 small"></i>@cat.Name

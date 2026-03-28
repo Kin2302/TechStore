@@ -74,7 +74,9 @@
             <h3 class="fw-bold mb-0">
                 <i class="fa-solid fa-fire text-danger"></i> Sản phẩm nổi bật
             </h3>
-            <a href="#" class="btn btn-outline-primary btn-sm">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
+            <a asp-controller="Home" asp-action="Search" class="btn btn-outline-primary btn-sm">
+    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+</a>
         </div>
 
         <div class="row g-4">
@@ -101,7 +103,7 @@
                                 </a>
 
                                 <div class="quick-actions">
-                                    <button class="btn btn-light btn-sm" title="Yêu thích">
+                                    <button class="btn btn-light btn-sm wishlist-btn" title="Yêu thích" data-product-id="@item.Id">
                                         <i class="fa-regular fa-heart"></i>
                                     </button>
                                     <button class="btn btn-light btn-sm compare-btn" title="So sánh" data-product-id="@item.Id">
@@ -213,6 +215,24 @@
                     }
                 });
             });
+
+            $('.wishlist-btn').click(function (e) {
+    e.preventDefault();
+    var btn = $(this);
+    var productId = btn.data('product-id');
+
+    $.post('@Url.Action("Add", "Wishlist")', { productId: productId }, function (response) {
+        if (response.requireLogin && response.loginUrl) {
+            window.location.href = response.loginUrl;
+            return;
+        }
+
+        if (response.success) {
+            $('#wishlistCount').text(response.wishlistCount);
+            btn.find('i').removeClass('fa-regular').addClass('fa-solid text-danger');
+        }
+    });
+});
         });
     </script>
 }

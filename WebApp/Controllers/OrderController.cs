@@ -14,15 +14,18 @@ namespace WebApp.Controllers
         private readonly IOrderService _orderService;
         private readonly ICartService _cartService;
         private readonly IGHNService _ghnService;
+        private readonly IVoucherService _voucherService;
 
         public OrderController(
             IOrderService orderService,
             ICartService cartService,
-            IGHNService ghnService)
+            IGHNService ghnService,
+            IVoucherService voucherService)
         {
             _orderService = orderService;
             _cartService = cartService;
             _ghnService = ghnService;
+            _voucherService = voucherService;
         }
 
         [HttpGet]
@@ -87,6 +90,31 @@ namespace WebApp.Controllers
                 return View(model);
             }
 
+            var subTotal = cartItems.Sum(x => x.Total);
+            if (!string.IsNullOrWhiteSpace(model.VoucherCode))
+            {
+                var voucherResult = await _voucherService.ValidateVoucherAsync(
+                    model.VoucherCode,
+                    userId!,
+                    subTotal,
+                    cancellationToken);
+
+                if (!voucherResult.IsValid)
+                {
+                    ModelState.AddModelError(nameof(model.VoucherCode), voucherResult.Message);
+                    model.DiscountAmount = 0;
+                }
+                else
+                {
+                    model.VoucherCode = voucherResult.Code;
+                    model.DiscountAmount = voucherResult.DiscountAmount;
+                }
+            }
+            else
+            {
+                model.DiscountAmount = 0;
+            }
+
             var result = await _orderService.CreateOrderAsync(userId, model, cartItems);
 
             if (result.Success)
@@ -94,6 +122,11 @@ namespace WebApp.Controllers
                 if (string.Equals(model.PaymentMethod, "MoMo", StringComparison.OrdinalIgnoreCase))
                 {
                     return RedirectToAction("ProcessMoMoPayment", "Payment", new { orderId = result.OrderId });
+                }
+
+                if (string.Equals(model.PaymentMethod, "VNPay", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RedirectToAction("ProcessVNPayPayment", "Payment", new { orderId = result.OrderId });
                 }
 
                 _cartService.ClearCart();
@@ -200,6 +233,38 @@ namespace WebApp.Controllers
             }
 
             return Json(new { success = true, fee = fee.Value });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ApplyVoucher(string code, CancellationToken cancellationToken)
+        {
+            var cartItems = _cartService.GetCart();
+            if (cartItems == null || !cartItems.Any())
+            {
+                return Json(new { success = false, message = "Giỏ hàng trống.", discount = 0 });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Json(new { success = false, message = "Không xác định được người dùng.", discount = 0 });
+            }
+
+            var subTotal = cartItems.Sum(x => x.Total);
+            var result = await _voucherService.ValidateVoucherAsync(code, userId, subTotal, cancellationToken);
+
+            if (!result.IsValid)
+            {
+                return Json(new { success = false, message = result.Message, discount = 0 });
+            }
+
+            return Json(new
+            {
+                success = true,
+                message = result.Message,
+                discount = result.DiscountAmount,
+                code = result.Code
+            });
         }
     }
 }

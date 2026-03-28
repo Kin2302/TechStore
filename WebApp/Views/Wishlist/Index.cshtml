@@ -1,0 +1,77 @@
+@model List<Application.DTOs.Catalog.WishlistItemDto>
+
+@{
+    ViewData["Title"] = "Wishlist";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">
+            <i class="fa-solid fa-heart text-danger"></i> Wishlist của bạn
+        </h3>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Wishlist đang trống.
+            <a asp-controller="Home" asp-action="Index" class="alert-link">Tiếp tục mua sắm</a>.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var item in Model)
+            {
+                <div class="col-xl-3 col-lg-4 col-md-6" data-product-id="@item.ProductId">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <a asp-controller="Home" asp-action="Detail" asp-route-id="@item.ProductId">
+                            <img src="@(item.ImageUrl ?? "https://via.placeholder.com/300x200?text=No+Image")"
+                                 class="card-img-top"
+                                 style="height:180px;object-fit:contain;padding:12px;"
+                                 alt="@item.ProductName">
+                        </a>
+
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">
+                                <a asp-controller="Home" asp-action="Detail" asp-route-id="@item.ProductId" class="text-decoration-none text-dark">
+                                    @item.ProductName
+                                </a>
+                            </h6>
+
+                            <div class="mt-auto">
+                                <h5 class="text-danger fw-bold mb-2">@item.Price.ToString("#,##0")₫</h5>
+                                <button class="btn btn-outline-danger btn-sm w-100 btn-remove-wishlist" data-product-id="@item.ProductId">
+                                    <i class="fa-solid fa-heart-crack me-1"></i> Xóa khỏi wishlist
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.btn-remove-wishlist').on('click', function (e) {
+                e.preventDefault();
+                var btn = $(this);
+                var productId = btn.data('product-id');
+
+                $.post('@Url.Action("Remove", "Wishlist")', { productId: productId }, function (res) {
+                    if (!res.success) return;
+
+                    btn.closest('[data-product-id]').remove();
+                    $('#wishlistCount').text(res.wishlistCount);
+
+                    if ($('[data-product-id]').length === 0) {
+                        location.reload();
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -39,6 +39,14 @@ namespace WebApp
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultUI();
 
+            // Google OAuth
+            builder.Services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+                });
+
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
             builder.Services.AddDistributedMemoryCache();
@@ -62,6 +70,9 @@ namespace WebApp
             builder.Services.AddScoped<IAdminBrandService, AdminBrandService>();
             builder.Services.AddScoped<ICompareService, CompareService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IWishlistService, WishlistService>();
+            builder.Services.AddScoped<IVoucherService, VoucherService>();
+            builder.Services.AddScoped<IAdminVoucherService, AdminVoucherService>();
 
             // MoMo
             builder.Services.Configure<MoMoOptions>(builder.Configuration.GetSection("MoMo"));
@@ -70,6 +81,14 @@ namespace WebApp
             // GHN
             builder.Services.Configure<GHNOptions>(builder.Configuration.GetSection("GHN"));
             builder.Services.AddHttpClient<IGHNService, GHNService>();
+
+            // SMTP
+            builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
+            // VNPay
+            builder.Services.Configure<VNPayOptions>(builder.Configuration.GetSection("VNPay"));
+            builder.Services.AddScoped<IVNPayService, VNPayService>();
 
             // === AI PLUGINS ===
             builder.Services.AddScoped<ProductPlugin>();

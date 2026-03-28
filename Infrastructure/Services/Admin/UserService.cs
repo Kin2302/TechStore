@@ -31,24 +31,22 @@ namespace TechStore.Infrastructure.Services.Admin
             var result = new List<UserInfoDto>();
             foreach (var user in users)
             {
-                var orderStats = await _context.Orders
-                    .Where(o => o.UserId == user.Id)
-                    .GroupBy(o => o.UserId)
-                    .Select(g => new
-                    {
-                        TotalOrders = g.Count(),
-                        TotalSpent = g.Sum(o => (decimal?)o.TotalAmount) ?? 0
-                    })
-                    .FirstOrDefaultAsync();
+                result.Add(await BuildUserInfoAsync(user));
+            }
 
-                result.Add(new UserInfoDto
-                {
-                    UserId = user.Id,
-                    Email = user.Email ?? "",
-                    UserName = user.UserName ?? "",
-                    TotalOrders = orderStats?.TotalOrders ?? 0,
-                    TotalSpent = orderStats?.TotalSpent ?? 0
-                });
+            return result;
+        }
+
+        public async Task<List<UserInfoDto>> GetAllUsersAsync()
+        {
+            var users = await _userManager.Users
+                .OrderBy(u => u.Email)
+                .ToListAsync();
+
+            var result = new List<UserInfoDto>();
+            foreach (var user in users)
+            {
+                result.Add(await BuildUserInfoAsync(user));
             }
 
             return result;
@@ -59,8 +57,34 @@ namespace TechStore.Infrastructure.Services.Admin
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return null;
 
+            return await BuildUserInfoAsync(user);
+        }
+
+        public async Task<bool> UpdateUserRoleAsync(string userId, string role)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) return false;
+            if (role != "Admin" && role != "User") return false;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Contains(role)) return true;
+
+            if (currentRoles.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded) return false;
+            }
+
+            var addResult = await _userManager.AddToRoleAsync(user, role);
+            return addResult.Succeeded;
+        }
+
+        private async Task<UserInfoDto> BuildUserInfoAsync(IdentityUser user)
+        {
             var orderStats = await _context.Orders
-                .Where(o => o.UserId == userId)
+                .Where(o => o.UserId == user.Id)
                 .GroupBy(o => o.UserId)
                 .Select(g => new
                 {
@@ -69,11 +93,15 @@ namespace TechStore.Infrastructure.Services.Admin
                 })
                 .FirstOrDefaultAsync();
 
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.Contains("Admin") ? "Admin" : "User";
+
             return new UserInfoDto
             {
                 UserId = user.Id,
                 Email = user.Email ?? "",
                 UserName = user.UserName ?? "",
+                Role = role,
                 TotalOrders = orderStats?.TotalOrders ?? 0,
                 TotalSpent = orderStats?.TotalSpent ?? 0
             };
