@@ -22,17 +22,20 @@ namespace TechStore.Infrastructure.Services
         private readonly ILogger<OrderService> logger;
         private readonly IGHNService _ghnService;
         private readonly IEmailService _emailService;
+        private readonly IVoucherService _voucherService;
 
         public OrderService(
             ApplicationDbContext context,
             ILogger<OrderService> logger,
             IGHNService ghnService,
-            IEmailService emailService)
+            IEmailService emailService,
+            IVoucherService voucherService)
         {
             _context = context;
             this.logger = logger;
             _ghnService = ghnService;
             _emailService = emailService;
+            _voucherService = voucherService;
         }
 
         
@@ -81,6 +84,30 @@ namespace TechStore.Infrastructure.Services
                     OutOfStockProducts = outOfStockMessages
                 };
             }
+
+            var subTotal = cartItems.Sum(ci => ci.Total);
+            decimal discountAmount = 0;
+            string? appliedVoucherCode = null;
+
+            if (!string.IsNullOrWhiteSpace(checkout.VoucherCode))
+            {
+                var voucherResult = await _voucherService.ValidateVoucherAsync(checkout.VoucherCode, userId, subTotal);
+                if (!voucherResult.IsValid)
+                {
+                    return new CreateOrderResult
+                    {
+                        Success = false,
+                        ErrorMessage = voucherResult.Message
+                    };
+                }
+
+                discountAmount = voucherResult.DiscountAmount;
+                appliedVoucherCode = voucherResult.Code;
+            }
+
+            var totalAmount = subTotal + checkout.ShippingFee - discountAmount;
+            if (totalAmount < 0) totalAmount = 0;
+
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -94,7 +121,9 @@ namespace TechStore.Infrastructure.Services
                     PaymentMethod = checkout.PaymentMethod,
                     OrderDate = DateTime.UtcNow,
                     ShippingFee = checkout.ShippingFee, // NEW
-                    TotalAmount = cartItems.Sum(ci => ci.Total) + checkout.ShippingFee,
+                    DiscountAmount = discountAmount,
+                    VoucherCode = appliedVoucherCode,
+                    TotalAmount = totalAmount,
                     Status = OrderStatus.Pending
                 };
 
@@ -120,6 +149,24 @@ namespace TechStore.Infrastructure.Services
 
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
+                
+                // sau SaveChangesAsync() lần đầu (đã có order.Id), trước Commit:
+                if (discountAmount > 0 && !string.IsNullOrWhiteSpace(appliedVoucherCode))
+                {
+                    var consumed = await _voucherService.MarkVoucherAsUsedAsync(
+                        appliedVoucherCode, userId, order.Id, discountAmount);
+
+                    if (!consumed)
+                    {
+                        await transaction.RollbackAsync();
+                        return new CreateOrderResult
+                        {
+                            Success = false,
+                            ErrorMessage = "Voucher đã hết lượt sử dụng, vui lòng thử mã khác."
+                        };
+                    }
+                }
+
                 await transaction.CommitAsync();
 
                 try

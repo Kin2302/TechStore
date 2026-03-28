@@ -23,7 +23,10 @@ namespace Application.DTOs.Orders {
 
         public decimal ShippingFee { get; set; } // NEW
         public decimal TotalAmount { get; set; }
-        public decimal SubTotalAmount => TotalAmount - ShippingFee; // NEW
+
+        public decimal DiscountAmount { get; set; }
+        public string? VoucherCode { get; set; }
+        public decimal SubTotalAmount => TotalAmount + DiscountAmount - ShippingFee; // NEW
 
         public string PaymentMethod { get; set; } = "";
         public string Status { get; set; }

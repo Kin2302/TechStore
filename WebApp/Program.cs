@@ -71,6 +71,8 @@ namespace WebApp
             builder.Services.AddScoped<ICompareService, CompareService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IWishlistService, WishlistService>();
+            builder.Services.AddScoped<IVoucherService, VoucherService>();
+            builder.Services.AddScoped<IAdminVoucherService, AdminVoucherService>();
 
             // MoMo
             builder.Services.Configure<MoMoOptions>(builder.Configuration.GetSection("MoMo"));

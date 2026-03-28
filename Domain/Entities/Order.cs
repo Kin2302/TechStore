@@ -13,14 +13,17 @@ namespace TechStore.Domain.Entities
         public string ShippingAddress { get; set; }
         public string? Note { get; set; }
 
-        public decimal ShippingFee { get; set; }  // NEW
+        public decimal ShippingFee { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public string? VoucherCode { get; set; }
+
         public decimal TotalAmount { get; set; }
         public string PaymentMethod { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
-        public string? ShippingProvider { get; set; }   // GHN
-        public string? ShippingCode { get; set; }       // order_code từ GHN
-        public string? ShippingStatusRaw { get; set; }  // trạng thái raw từ GHN
+        public string? ShippingProvider { get; set; }
+        public string? ShippingCode { get; set; }
+        public string? ShippingStatusRaw { get; set; }
 
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     }
